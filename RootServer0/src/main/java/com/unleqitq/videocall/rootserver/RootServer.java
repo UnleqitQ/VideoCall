@@ -1,19 +1,33 @@
 package com.unleqitq.videocall.rootserver;
 
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
 import java.io.*;
 
+
 public class RootServer {
 	
 	YAMLConfiguration configuration = new YAMLConfiguration();
+	ServerBootstrap bootstrap;
+	EventLoopGroup bossGroup;
+	EventLoopGroup workerGroup;
 	
 	public RootServer() {
-		loadConfig();
+		reloadConfig();
+		try {
+			initNetwork();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 	
-	private void loadConfig() {
+	private void reloadConfig() {
 		File file = new File(new File("./").getAbsoluteFile().getParent(), "properties.yml");
 		if (file.exists()) {
 			FileInputStream fis = null;
@@ -62,13 +76,32 @@ public class RootServer {
 		}
 	}
 	
-	public void run() {
-	
+	private void initNetwork() throws Exception {
+		workerGroup = new NioEventLoopGroup();
+		bossGroup = new NioEventLoopGroup();
+		try {
+			bootstrap = new ServerBootstrap();
+			bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).childHandler(
+					new ChannelInitializer<>() {
+						
+						@Override
+						protected void initChannel(Channel ch) throws Exception {
+							
+							ch.pipeline().addLast(new RequestDecoder(), new ResponseDataEncoder(),
+									new ProcessingHandler());
+						}
+					}).option(ChannelOption.SO_BACKLOG, 128).childOption(ChannelOption.SO_KEEPALIVE, true);
+			
+			ChannelFuture f = bootstrap.bind(configuration.getInt("network.server.port")).sync();
+			f.channel().closeFuture().sync();
+		} finally {
+			workerGroup.shutdownGracefully();
+			bossGroup.shutdownGracefully();
+		}
 	}
 	
 	public static void main(String[] args) {
-		RootServer rootServer = new RootServer();
-		rootServer.run();
+		new RootServer();
 	}
 	
 }

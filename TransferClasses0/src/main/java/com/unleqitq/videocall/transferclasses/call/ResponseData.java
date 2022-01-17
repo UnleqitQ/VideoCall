@@ -1,4 +1,4 @@
-package com.unleqitq.videocall.transferclasses;
+package com.unleqitq.videocall.transferclasses.call;
 
 public class ResponseData {
 	

@@ -1,7 +1,7 @@
 package com.unleqitq.videocall.rootserver;
 
-import com.unleqitq.videocall.transferclasses.RequestData;
-import com.unleqitq.videocall.transferclasses.ResponseData;
+import com.unleqitq.videocall.transferclasses.access.RequestData;
+import com.unleqitq.videocall.transferclasses.call.ResponseData;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;

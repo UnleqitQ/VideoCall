@@ -1,6 +1,6 @@
 package com.unleqitq.videocall.client;
 
-import com.unleqitq.videocall.transferclasses.ResponseData;
+import com.unleqitq.videocall.transferclasses.call.ResponseData;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
