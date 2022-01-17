@@ -20,17 +20,9 @@
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.unleqitq.videocall</groupId>
-            <artifactId>TransferClasses</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.unleqitq.videocall</groupId>
-            <artifactId>SharedClasses</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-    </dependencies>
+    <build>
+        <defaultGoal>clean package jar</defaultGoal>
+
+    </build>
 
 </project>
