@@ -5,23 +5,21 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 
 import java.io.*;
 
+
 public class RootServer {
 	
 	YAMLConfiguration configuration = new YAMLConfiguration();
 	
 	public RootServer() {
 		
-		try {
-			reloadConfig();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		
+		reloadConfig();
 		
 		System.out.println(configuration.getInt("network.server.port"));
 	}
 	
-	private void reloadConfig() throws IOException {
-		File file = new File("properties.yml");
+	private void reloadConfig() {
+		File file = new File(new File("./"),"properties.yml");
 		if (file.exists()) {
 			FileInputStream fis = null;
 			try {
@@ -33,26 +31,38 @@ public class RootServer {
 				e.printStackTrace();
 			} finally {
 				if (fis != null)
-					fis.close();
+					try {
+						fis.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 			}
 		}
 		else {
 			InputStream is = null;
 			FileWriter writer = null;
 			try {
-				is = getClass().getResourceAsStream("properties.yml");
+				is = getClass().getClassLoader().getResourceAsStream("properties.yml");
 				configuration.read(is);
-				file.getParentFile().mkdirs();
+				file.mkdirs();
 				file.createNewFile();
 				writer = new FileWriter(file);
 				configuration.write(writer);
-			} catch (ConfigurationException e) {
+			} catch (ConfigurationException | IOException e) {
 				e.printStackTrace();
 			} finally {
 				if (is != null)
-					is.close();
+					try {
+						is.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				if (writer != null)
-					writer.close();
+					try {
+						writer.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 			}
 		}
 	}
