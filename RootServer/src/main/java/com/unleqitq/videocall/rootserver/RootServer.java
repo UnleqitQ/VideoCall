@@ -1,5 +1,12 @@
 package com.unleqitq.videocall.rootserver;
 
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
@@ -9,17 +16,17 @@ import java.io.*;
 public class RootServer {
 	
 	YAMLConfiguration configuration = new YAMLConfiguration();
+	ServerBootstrap bootstrap;
+	EventLoopGroup bossGroup;
+	EventLoopGroup workerGroup;
 	
 	public RootServer() {
-		
-		
 		reloadConfig();
-		
-		System.out.println(configuration.getInt("network.server.port"));
+		initNetwork();
 	}
 	
 	private void reloadConfig() {
-		File file = new File(new File("./"),"properties.yml");
+		File file = new File(new File("./").getAbsoluteFile().getParent(), "properties.yml");
 		if (file.exists()) {
 			FileInputStream fis = null;
 			try {
@@ -44,7 +51,7 @@ public class RootServer {
 			try {
 				is = getClass().getClassLoader().getResourceAsStream("properties.yml");
 				configuration.read(is);
-				file.mkdirs();
+				file.getParentFile().mkdirs();
 				file.createNewFile();
 				writer = new FileWriter(file);
 				configuration.write(writer);
@@ -64,6 +71,27 @@ public class RootServer {
 						e.printStackTrace();
 					}
 			}
+		}
+	}
+	
+	private void initNetwork() {
+		workerGroup = new NioEventLoopGroup();
+		bossGroup = new NioEventLoopGroup();
+		try {
+			bootstrap = new ServerBootstrap();
+			bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).childHandler(
+					new ChannelInitializer<>() {
+						
+						@Override
+						protected void initChannel(Channel ch) throws Exception {
+							
+							ch.pipeline().addLast(new RequestDecoder(), new ResponseDataEncoder(),
+									new ProcessingHandler());
+						}
+					}).option(ChannelOption.SO_BACKLOG, 128).childOption(ChannelOption.SO_KEEPALIVE, true);
+		} finally {
+			workerGroup.shutdownGracefully();
+			bossGroup.shutdownGracefully();
 		}
 	}
 	
