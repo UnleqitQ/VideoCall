@@ -1,5 +1,7 @@
 package com.unleqitq.videocall.rootserver;
 
+import com.unleqitq.videocall.transferclasses.RequestData;
+import com.unleqitq.videocall.transferclasses.ResponseData;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -12,7 +14,8 @@ public class ProcessingHandler extends ChannelInboundHandlerAdapter {
 		
 		RequestData requestData = (RequestData) msg;
 		ResponseData responseData = new ResponseData();
-		responseData.setIntValue(requestData.getIntValue() * 2);
+		responseData.setResponseValue(requestData.getIntValue() * 2);
+		responseData.setRequestValue(requestData.getIntValue());
 		ChannelFuture future = ctx.writeAndFlush(responseData);
 		future.addListener(ChannelFutureListener.CLOSE);
 		System.out.println(requestData);

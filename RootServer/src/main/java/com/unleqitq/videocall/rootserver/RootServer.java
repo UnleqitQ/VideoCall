@@ -1,10 +1,7 @@
 package com.unleqitq.videocall.rootserver;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.commons.configuration2.YAMLConfiguration;
@@ -22,7 +19,12 @@ public class RootServer {
 	
 	public RootServer() {
 		reloadConfig();
-		initNetwork();
+		try {
+			initNetwork();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 	
 	private void reloadConfig() {
@@ -74,7 +76,7 @@ public class RootServer {
 		}
 	}
 	
-	private void initNetwork() {
+	private void initNetwork() throws Exception {
 		workerGroup = new NioEventLoopGroup();
 		bossGroup = new NioEventLoopGroup();
 		try {
@@ -89,6 +91,9 @@ public class RootServer {
 									new ProcessingHandler());
 						}
 					}).option(ChannelOption.SO_BACKLOG, 128).childOption(ChannelOption.SO_KEEPALIVE, true);
+			
+			ChannelFuture f = bootstrap.bind(configuration.getInt("network.server.port")).sync();
+			f.channel().closeFuture().sync();
 		} finally {
 			workerGroup.shutdownGracefully();
 			bossGroup.shutdownGracefully();

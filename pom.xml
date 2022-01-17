@@ -21,6 +21,26 @@
     </modules>
 
 
+    <profiles>
+        <profile>
+            <id>RootServer</id>
+            <modules>
+                <module>RootServer</module>
+                <module>SharedClasses</module>
+                <module>TransferClasses</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>Client</id>
+            <modules>
+                <module>Client</module>
+                <module>SharedClasses</module>
+                <module>TransferClasses</module>
+            </modules>
+        </profile>
+    </profiles>
+
+
     <!--properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>

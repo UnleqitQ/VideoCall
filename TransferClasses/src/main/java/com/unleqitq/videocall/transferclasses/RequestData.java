@@ -1,6 +1,7 @@
-package com.unleqitq.videocall.rootserver;
+package com.unleqitq.videocall.transferclasses;
 
 public class RequestData {
+	
 	private int intValue;
 	private String stringValue;
 	
@@ -18,6 +19,11 @@ public class RequestData {
 	
 	public void setStringValue(String stringValue) {
 		this.stringValue = stringValue;
+	}
+	
+	@Override
+	public String toString() {
+		return "RequestData{ intValue=" + intValue + ", stringValue='" + stringValue + "' }";
 	}
 	
 }
