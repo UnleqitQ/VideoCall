@@ -7,6 +7,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -19,7 +21,9 @@ public class ClientNetworkConnection extends AbstractNetworkConnection {
 		super(socket);
 		outputStream = socket.getOutputStream();
 		inputStream = socket.getInputStream();
-		createObjectStreams();
+		objectOutputStream = new ObjectOutputStream(outputStream);
+		objectInputStream = new ObjectInputStream(inputStream);
+		init();
 	}
 	
 	@Override
@@ -46,11 +50,13 @@ public class ClientNetworkConnection extends AbstractNetworkConnection {
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
 			e.printStackTrace();
 		}
+		System.out.println("Received RSA key");
 	}
 	
 	@Override
 	public void onConfirmation() {
 		ready = true;
+		System.out.println("Connection ready");
 	}
 	
 }

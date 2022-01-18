@@ -29,13 +29,11 @@ public abstract class AbstractNetworkConnection {
 	public AbstractNetworkConnection(Socket socket) {
 		this.socket = socket;
 		receiveThread = new Thread(this::loopReceive);
-		receiveThread.start();
 	}
 	
-	public void createObjectStreams() throws IOException {
-		objectInputStream = new ObjectInputStream(inputStream);
-		objectOutputStream = new ObjectOutputStream(outputStream);
+	public void init() throws IOException {
 		onCreate();
+		receiveThread.start();
 	}
 	
 	public boolean isReady() {

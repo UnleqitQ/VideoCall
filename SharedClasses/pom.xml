@@ -9,6 +9,7 @@
         <artifactId>videocall</artifactId>
         <version>1.0.0</version>
     </parent>
+    <packaging>jar</packaging>
 
     <groupId>com.unleqitq.videocall</groupId>
     <artifactId>SharedClasses</artifactId>

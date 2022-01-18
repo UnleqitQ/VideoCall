@@ -8,6 +8,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -22,7 +24,9 @@ public class ServerNetworkConnection extends AbstractNetworkConnection {
 		this.server = server;
 		inputStream = socket.getInputStream();
 		outputStream = socket.getOutputStream();
-		createObjectStreams();
+		objectInputStream = new ObjectInputStream(inputStream);
+		objectOutputStream = new ObjectOutputStream(outputStream);
+		init();
 	}
 	
 	@Override
@@ -39,13 +43,14 @@ public class ServerNetworkConnection extends AbstractNetworkConnection {
 	@Override
 	public void onAES(AESKeyData data) {
 		try {
-			data.getKey(server.getRsaPrivateKey());
+			setAesKey(data.getKey(server.getRsaPrivateKey()));
 			send(new ConfirmationData());
 			ready = true;
 			server.getConnections().add(this);
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
 			e.printStackTrace();
 		}
+		System.out.println("Received AES key");
 	}
 	
 	@Override

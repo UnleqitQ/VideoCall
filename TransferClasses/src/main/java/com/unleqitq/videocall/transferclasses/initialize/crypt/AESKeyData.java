@@ -7,12 +7,10 @@ import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.Serial;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 
 public class AESKeyData extends SendData {
 	
@@ -28,9 +26,7 @@ public class AESKeyData extends SendData {
 	
 	public SecretKey getKey(RSAPrivateKey rsaPrivateKey) throws NoSuchAlgorithmException, InvalidKeySpecException,
 			NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-		KeyFactory keyFactory = KeyFactory.getInstance("AES");
-		KeySpec keySpec = new SecretKeySpec(decrypt(rsaPrivateKey, data), "AES");
-		return (SecretKey) keyFactory.generatePublic(keySpec);
+		return new SecretKeySpec(decrypt(rsaPrivateKey, data), "AES");
 	}
 	
 	private static byte[] encrypt(RSAPublicKey rsaPublicKey, byte[] data) throws NoSuchPaddingException,

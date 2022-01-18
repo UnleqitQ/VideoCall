@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Server {
 	
-	private final int port;
 	private ServerSocket serverSocket;
 	private Thread acceptThread;
 	private Thread sendThread;
@@ -24,7 +23,6 @@ public class Server {
 	public ConcurrentLinkedQueue<MessageData> sendQueue = new ConcurrentLinkedQueue<>();
 	
 	public Server(int port) throws IOException, NoSuchAlgorithmException {
-		this.port = port;
 		serverSocket = new ServerSocket(port);
 		acceptThread = new Thread(this::loopAccept);
 		sendThread = new Thread(this::loopSend);
@@ -59,6 +57,7 @@ public class Server {
 	
 	public void add(Socket socket) throws IOException {
 		ServerNetworkConnection connection = new ServerNetworkConnection(this, socket);
+		System.out.println("Connected: " + connection.getSocket());
 	}
 	
 	public ConcurrentLinkedQueue<ServerNetworkConnection> getConnections() {
