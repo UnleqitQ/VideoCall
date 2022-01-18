@@ -1,7 +1,7 @@
 package com.unleqitq.videocall.sharedclasses;
 
-import com.unleqitq.videocall.transferclasses.crypt.AESKeyData;
-import com.unleqitq.videocall.transferclasses.crypt.RSAKeyData;
+import com.unleqitq.videocall.transferclasses.initialize.crypt.AESKeyData;
+import com.unleqitq.videocall.transferclasses.initialize.crypt.RSAKeyData;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -28,6 +28,11 @@ public class ClientNetworkConnection extends AbstractNetworkConnection {
 	}
 	
 	@Override
+	public void onCreate() {
+	
+	}
+	
+	@Override
 	public void onAES(AESKeyData data) {
 	
 	}
@@ -41,6 +46,11 @@ public class ClientNetworkConnection extends AbstractNetworkConnection {
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void onConfirmation() {
+		ready = true;
 	}
 	
 }

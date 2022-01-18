@@ -1,6 +1,6 @@
-package com.unleqitq.videocall.transferclasses.crypt;
+package com.unleqitq.videocall.transferclasses.initialize.crypt;
 
-import com.unleqitq.videocall.transferclasses.SendData;
+import com.unleqitq.videocall.transferclasses.initialize.SendData;
 
 import java.io.Serial;
 

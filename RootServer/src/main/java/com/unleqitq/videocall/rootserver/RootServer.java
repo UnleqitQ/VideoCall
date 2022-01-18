@@ -1,16 +1,28 @@
 package com.unleqitq.videocall.rootserver;
 
+import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.Server;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
 import java.io.*;
+import java.security.NoSuchAlgorithmException;
 
 public class RootServer {
 	
 	YAMLConfiguration configuration = new YAMLConfiguration();
+	Server server;
 	
-	public RootServer() {
+	
+	public RootServer() throws IOException, NoSuchAlgorithmException {
 		loadConfig();
+		
+		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4000);
+		
+		int port = configuration.getInt("network.server.root.port", 1000);
+		server = new Server(port);
+		
+		server.start();
 	}
 	
 	private void loadConfig() {
@@ -66,7 +78,7 @@ public class RootServer {
 	
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 		RootServer rootServer = new RootServer();
 		rootServer.run();
 	}

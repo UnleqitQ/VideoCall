@@ -1,9 +1,11 @@
 package com.unleqitq.videocall.sharedclasses;
 
-import com.unleqitq.videocall.transferclasses.SendData;
-import com.unleqitq.videocall.transferclasses.crypt.AESKeyData;
-import com.unleqitq.videocall.transferclasses.crypt.CryptData;
-import com.unleqitq.videocall.transferclasses.crypt.RSAKeyData;
+import com.unleqitq.videocall.transferclasses.Data;
+import com.unleqitq.videocall.transferclasses.initialize.SendData;
+import com.unleqitq.videocall.transferclasses.initialize.crypt.AESKeyData;
+import com.unleqitq.videocall.transferclasses.initialize.crypt.ConfirmationData;
+import com.unleqitq.videocall.transferclasses.initialize.crypt.CryptData;
+import com.unleqitq.videocall.transferclasses.initialize.crypt.RSAKeyData;
 
 import javax.crypto.*;
 import java.io.*;
@@ -20,14 +22,24 @@ public abstract class AbstractNetworkConnection {
 	protected OutputStream outputStream;
 	protected ObjectOutputStream objectOutputStream;
 	protected ObjectInputStream objectInputStream;
+	protected boolean ready;
+	private Thread receiveThread;
+	public static int maxTimeDifference = 4000;
 	
 	public AbstractNetworkConnection(Socket socket) {
 		this.socket = socket;
+		receiveThread = new Thread(this::loopReceive);
+		receiveThread.start();
 	}
 	
 	public void createObjectStreams() throws IOException {
 		objectInputStream = new ObjectInputStream(inputStream);
 		objectOutputStream = new ObjectOutputStream(outputStream);
+		onCreate();
+	}
+	
+	public boolean isReady() {
+		return ready;
 	}
 	
 	public Socket getSocket() {
@@ -73,22 +85,36 @@ public abstract class AbstractNetworkConnection {
 		}
 	}
 	
+	public abstract void onCreate();
+	
 	public abstract void onAES(AESKeyData data);
 	
 	public abstract void onRSA(RSAKeyData data);
+	
+	public abstract void onConfirmation();
+	
+	public void loopReceive() {
+		while (socket.isConnected()) {
+			runReceive();
+		}
+	}
 	
 	public void runReceive() {
 		try {
 			SendData sendData = (SendData) objectInputStream.readUnshared();
 			if (sendData instanceof CryptData) {
-				Serializable data = CryptoHandler.decrypt((CryptData) sendData, aesKey);
-				listener.onReceive(data);
+				Data data = CryptoHandler.decrypt((CryptData) sendData, aesKey);
+				if (data.getDifference() <= maxTimeDifference)
+					listener.onReceive(data);
 			}
 			else if (sendData instanceof AESKeyData) {
 				onAES((AESKeyData) sendData);
 			}
 			else if (sendData instanceof RSAKeyData) {
 				onRSA((RSAKeyData) sendData);
+			}
+			else if (sendData instanceof ConfirmationData) {
+				onConfirmation();
 			}
 		} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | ClassNotFoundException e) {
 			e.printStackTrace();

@@ -15,24 +15,30 @@ public class Server {
 	private final int port;
 	private ServerSocket serverSocket;
 	private Thread acceptThread;
-	private ConcurrentLinkedQueue<Socket> sockets = new ConcurrentLinkedQueue<>();
+	private Thread sendThread;
+	private ConcurrentLinkedQueue<ServerNetworkConnection> connections = new ConcurrentLinkedQueue<>();
 	private RSAPrivateKey rsaPrivateKey;
 	private RSAPublicKey rsaPublicKey;
 	private KeyPair keyPair;
 	
-	public Server(int port) throws IOException {
+	public ConcurrentLinkedQueue<MessageData> sendQueue = new ConcurrentLinkedQueue<>();
+	
+	public Server(int port) throws IOException, NoSuchAlgorithmException {
 		this.port = port;
 		serverSocket = new ServerSocket(port);
-		acceptThread = new Thread(this::loop);
+		acceptThread = new Thread(this::loopAccept);
+		sendThread = new Thread(this::loopSend);
+		generateKey();
 	}
 	
 	public void start() {
 		acceptThread.start();
+		sendThread.start();
 	}
 	
-	public void loop() {
+	public void loopAccept() {
 		while (!serverSocket.isClosed()) {
-			run();
+			runAccept();
 		}
 	}
 	
@@ -42,17 +48,21 @@ public class Server {
 		rsaPublicKey = (RSAPublicKey) keyPair.getPublic();
 	}
 	
-	public void run() {
+	public void runAccept() {
 		try {
 			Socket socket = serverSocket.accept();
-			sockets.add(socket);
+			add(socket);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public ConcurrentLinkedQueue<Socket> getSockets() {
-		return sockets;
+	public void add(Socket socket) throws IOException {
+		ServerNetworkConnection connection = new ServerNetworkConnection(this, socket);
+	}
+	
+	public ConcurrentLinkedQueue<ServerNetworkConnection> getConnections() {
+		return connections;
 	}
 	
 	public RSAPrivateKey getRsaPrivateKey() {
@@ -61,6 +71,24 @@ public class Server {
 	
 	public RSAPublicKey getRsaPublicKey() {
 		return rsaPublicKey;
+	}
+	
+	public void loopSend() {
+		while (true) {
+			runSend();
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void runSend() {
+		while (!sendQueue.isEmpty()) {
+			MessageData messageData = sendQueue.poll();
+			messageData.connection.write(messageData.data);
+		}
 	}
 	
 }

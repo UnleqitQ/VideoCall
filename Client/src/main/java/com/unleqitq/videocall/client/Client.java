@@ -1,16 +1,26 @@
 package com.unleqitq.videocall.client;
 
+import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
 import java.io.*;
+import java.net.Socket;
 
 public class Client {
 	
 	YAMLConfiguration configuration = new YAMLConfiguration();
+	ClientNetworkConnection connection;
 	
-	public Client() {
+	public Client() throws IOException {
 		loadConfig();
+		
+		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4000);
+		String host = configuration.getString("network.server.root.host", "localhost");
+		int port = configuration.getInt("network.server.root.port", 1000);
+		
+		Socket socket = new Socket(host, port);
+		connection = new ClientNetworkConnection(socket);
 	}
 	
 	private void loadConfig() {
@@ -20,9 +30,7 @@ public class Client {
 			try {
 				fis = new FileInputStream(file);
 				configuration.read(fis);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (ConfigurationException e) {
+			} catch (FileNotFoundException | ConfigurationException e) {
 				e.printStackTrace();
 			} finally {
 				if (fis != null)

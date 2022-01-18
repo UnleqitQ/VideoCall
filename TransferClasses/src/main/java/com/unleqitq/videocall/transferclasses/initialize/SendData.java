@@ -1,4 +1,4 @@
-package com.unleqitq.videocall.transferclasses;
+package com.unleqitq.videocall.transferclasses.initialize;
 
 import java.io.Serial;
 import java.io.Serializable;

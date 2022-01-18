@@ -1,9 +1,9 @@
 package com.unleqitq.videocall.sharedclasses;
 
-import java.io.Serializable;
+import com.unleqitq.videocall.transferclasses.Data;
 
 public interface ReceiveListener {
 	
-	public void onReceive(Serializable serializable);
+	public void onReceive(Data data);
 	
 }

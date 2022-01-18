@@ -1,6 +1,6 @@
 package com.unleqitq.videocall.sharedclasses;
 
-import com.unleqitq.videocall.transferclasses.crypt.CryptData;
+import com.unleqitq.videocall.transferclasses.initialize.crypt.CryptData;
 import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.*;

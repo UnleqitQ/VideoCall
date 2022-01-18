@@ -3,3 +3,5 @@ network:
     root:
       host: localhost
       port: 1000
+  maxTimeDifference: 4000
+

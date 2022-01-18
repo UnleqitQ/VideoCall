@@ -1,8 +1,6 @@
 package com.unleqitq.videocall.sharedclasses;
 
-import com.unleqitq.videocall.transferclasses.SendData;
-
-import java.net.Socket;
+import com.unleqitq.videocall.transferclasses.initialize.SendData;
 
 public class MessageData {
 	

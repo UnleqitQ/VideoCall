@@ -1,6 +1,6 @@
-package com.unleqitq.videocall.transferclasses.crypt;
+package com.unleqitq.videocall.transferclasses.initialize.crypt;
 
-import com.unleqitq.videocall.transferclasses.SendData;
+import com.unleqitq.videocall.transferclasses.initialize.SendData;
 import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.*;
@@ -9,7 +9,6 @@ import java.io.Serial;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
