@@ -40,6 +40,10 @@ public class Server {
 		}
 	}
 	
+	public ServerSocket getServerSocket() {
+		return serverSocket;
+	}
+	
 	public void generateKey() throws NoSuchAlgorithmException {
 		keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
 		rsaPrivateKey = (RSAPrivateKey) keyPair.getPrivate();

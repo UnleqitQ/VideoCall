@@ -1,0 +1,10 @@
+network:
+  server:
+    root:
+      host: localhost
+      port: 1000
+    access:
+      port: 1100
+  maxTimeDifference: 4000
+
+pushInfo: 10000

@@ -1,42 +1,56 @@
-package com.unleqitq.videocall.rootserver;
+package com.unleqitq.videocall.accessserver;
 
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.Server;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
+import com.unleqitq.videocall.transferclasses.connection.MachineInformation;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
 import java.io.*;
+import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.PriorityQueue;
 import java.util.Set;
 
-public class RootServer {
+public class AccessServer {
 	
 	YAMLConfiguration configuration = new YAMLConfiguration();
 	Server server;
 	Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());
 	Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
-	Set<CallConnection> callConnections = Collections.synchronizedSet(new HashSet<>());
-	Set<AccessConnection> accessConnections = Collections.synchronizedSet(new HashSet<>());
-	PriorityQueue<CallConnection> callQueue = new PriorityQueue<>((c1, c2) -> (int) (c1.freeMemory - c2.freeMemory));
-	PriorityQueue<AccessConnection> accessQueue = new PriorityQueue<>(
-			(c1, c2) -> (int) (c1.freeMemory - c2.freeMemory));
 	Thread thread;
+	long lastInfo = System.currentTimeMillis();
 	
-	public RootServer() throws IOException, NoSuchAlgorithmException {
+	ClientNetworkConnection rootConnection;
+	
+	public AccessServer() throws IOException, NoSuchAlgorithmException {
 		loadConfig();
 		
 		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4000);
 		
-		int port = configuration.getInt("network.server.root.port", 1000);
+		int port = configuration.getInt("network.server.access.port", 1100);
 		server = new Server(port);
 		
 		server.start();
 		thread = new Thread(this::loop);
 		thread.start();
+		
+		String host = configuration.getString("network.server.root.host", "localhost");
+		port = configuration.getInt("network.server.root.port", 1000);
+		
+		Socket socket = new Socket(host, port);
+		rootConnection = new ClientNetworkConnection(socket);
+		
+		try {
+			Thread.sleep(1000 * 6);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		rootConnection.send(new ConnectionInformation(ConnectionInformation.ClientType.ACCESS));
 	}
 	
 	private void loadConfig() {
@@ -101,6 +115,11 @@ public class RootServer {
 	
 	public void run() {
 		runAddConnection();
+		if (System.currentTimeMillis() - lastInfo > configuration.getInt("pushInfo", 1000)) {
+			rootConnection.send(
+					new MachineInformation(server.getServerSocket().getLocalPort(), Runtime.getRuntime().freeMemory()));
+			lastInfo = System.currentTimeMillis();
+		}
 	}
 	
 	public void runAddConnection() {
@@ -113,26 +132,12 @@ public class RootServer {
 	}
 	
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-		RootServer rootServer = new RootServer();
-	}
-	
-	public void addCall(BaseConnection baseConnection) {
-		baseConnections.remove(baseConnection);
-		CallConnection callConnection = new CallConnection(baseConnection.connection, this);
-		callConnections.add(callConnection);
-		callQueue.add(callConnection);
+		AccessServer rootServer = new AccessServer();
 	}
 	
 	public void addClient(BaseConnection baseConnection) {
 		baseConnections.remove(baseConnection);
 		clientConnections.add(new ClientConnection(baseConnection.connection, this));
-	}
-	
-	public void addAccess(BaseConnection baseConnection) {
-		baseConnections.remove(baseConnection);
-		AccessConnection accessConnection = new AccessConnection(baseConnection.connection, this);
-		accessConnections.add(accessConnection);
-		accessQueue.add(accessConnection);
 	}
 	
 }
