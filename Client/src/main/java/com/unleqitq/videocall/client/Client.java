@@ -1,6 +1,7 @@
 package com.unleqitq.videocall.client;
 
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
+import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
@@ -21,6 +22,14 @@ public class Client {
 		
 		Socket socket = new Socket(host, port);
 		connection = new ClientNetworkConnection(socket);
+		
+		try {
+			Thread.sleep(1000 * 6);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		connection.send(new ConnectionInformation(ConnectionInformation.ClientType.CLIENT));
 	}
 	
 	private void loadConfig() {
