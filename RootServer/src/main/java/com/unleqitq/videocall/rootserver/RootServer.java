@@ -99,6 +99,8 @@ public class RootServer {
 		saveCalls();
 		saveTeams();
 		saveUsers();
+		
+		System.out.println(managerHandler.getAccountManager().getAccount("root").save());
 	}
 	
 	public void createUser(@NotNull String username, @NotNull byte[] password, @NotNull String firstname, @NotNull String lastname) {
