@@ -3,6 +3,7 @@ package com.unleqitq.videocall.sharedclasses.call;
 import com.google.gson.JsonObject;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Set;
@@ -73,11 +74,12 @@ public abstract class CallDefinition {
 		return Objects.hash(getUuid());
 	}
 	
-	@NotNull
+	@Nullable
 	public static <T extends CallDefinition> T load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
 		return switch (section.get("type").getAsString()) {
 			case "team" -> (T) TeamCallDefinition.load(managerHandler, section);
 			case "basic" -> (T) BasicCallDefinition.load(managerHandler, section);
+			default -> null;
 		};
 	}
 	
