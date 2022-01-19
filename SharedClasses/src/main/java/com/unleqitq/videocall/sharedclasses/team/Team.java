@@ -1,7 +1,9 @@
 package com.unleqitq.videocall.sharedclasses.team;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import org.jetbrains.annotations.NotNull;
@@ -83,13 +85,26 @@ public class Team {
 	}
 	
 	@NotNull
-	public static Team load(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull JsonObject section) {
-		Team team = new Team(managerHandler, uuid, UUID.fromString(section.get("creator").getAsString()),
-				section.get("name").getAsString());
+	public static Team load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
+		Team team = new Team(managerHandler, UUID.fromString(section.get("uuid").getAsString()),
+				UUID.fromString(section.get("creator").getAsString()), section.get("name").getAsString());
 		for (JsonElement element : section.getAsJsonArray("members")) {
 			team.addUser(UUID.fromString(element.getAsString()));
 		}
 		return team;
+	}
+	
+	@NotNull
+	public JsonObject save() {
+		JsonObject object = new JsonObject();
+		object.add("uuid", new JsonPrimitive(getUuid().toString()));
+		object.add("creator", new JsonPrimitive(getCreator().toString()));
+		JsonArray memberArray = new JsonArray(members.size());
+		for (UUID user : members) {
+			memberArray.add(user.toString());
+		}
+		object.add("members", memberArray);
+		return object;
 	}
 	
 }

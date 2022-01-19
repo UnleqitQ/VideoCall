@@ -3,7 +3,7 @@ package com.unleqitq.videocall.rootserver;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.transferclasses.Data;
-import com.unleqitq.videocall.transferclasses.connection.AccessInformation;
+import com.unleqitq.videocall.transferclasses.base.AccessInformation;
 import org.jetbrains.annotations.NotNull;
 
 public class ClientConnection implements ReceiveListener {

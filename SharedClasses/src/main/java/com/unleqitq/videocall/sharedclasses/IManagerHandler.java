@@ -1,19 +1,27 @@
 package com.unleqitq.videocall.sharedclasses;
 
-import com.unleqitq.videocall.sharedclasses.call.ICallManager;
-import com.unleqitq.videocall.sharedclasses.team.ITeamManager;
-import com.unleqitq.videocall.sharedclasses.user.IUserManager;
+import com.unleqitq.videocall.sharedclasses.account.AbstractAccountManager;
+import com.unleqitq.videocall.sharedclasses.call.AbstractCallManager;
+import com.unleqitq.videocall.sharedclasses.team.AbstractTeamManager;
+import com.unleqitq.videocall.sharedclasses.user.AbstractUserManager;
+import org.apache.commons.configuration2.YAMLConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 public interface IManagerHandler {
 	
 	@NotNull
-	public IUserManager getUserManager();
+	public AbstractUserManager getUserManager();
 	
 	@NotNull
-	public ITeamManager getTeamManager();
+	public AbstractTeamManager getTeamManager();
 	
 	@NotNull
-	public ICallManager getCallManager();
+	public AbstractCallManager getCallManager();
+	
+	@NotNull
+	public AbstractAccountManager getAccountManager();
+	
+	@NotNull
+	public YAMLConfiguration getConfiguration();
 	
 }

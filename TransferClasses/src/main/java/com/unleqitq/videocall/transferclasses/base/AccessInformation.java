@@ -1,21 +1,19 @@
-package com.unleqitq.videocall.transferclasses.connection;
+package com.unleqitq.videocall.transferclasses.base;
 
 import java.io.Serial;
 import java.io.Serializable;
 
-public class CallInformation implements Serializable {
+public class AccessInformation implements Serializable {
 	
 	@Serial
 	private static final long serialVersionUID = -2772669104831032800L;
 	
 	private final String host;
 	private final int port;
-	private final int callId;
 	
-	public CallInformation(String host, int port, int callId) {
+	public AccessInformation(String host, int port) {
 		this.host = host;
 		this.port = port;
-		this.callId = callId;
 	}
 	
 	public String getHost() {
@@ -24,10 +22,6 @@ public class CallInformation implements Serializable {
 	
 	public int getPort() {
 		return port;
-	}
-	
-	public int getCallId() {
-		return callId;
 	}
 	
 }

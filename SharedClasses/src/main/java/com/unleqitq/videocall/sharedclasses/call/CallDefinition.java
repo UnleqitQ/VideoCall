@@ -74,11 +74,14 @@ public abstract class CallDefinition {
 	}
 	
 	@NotNull
-	public static <T extends CallDefinition> T load(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull JsonObject section) {
+	public static <T extends CallDefinition> T load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
 		return switch (section.get("type").getAsString()) {
-			case "team" -> (T) TeamCallDefinition.load(managerHandler, uuid, section);
-			case "basic" -> (T) BasicCallDefinition.load(managerHandler, uuid, section);
+			case "team" -> (T) TeamCallDefinition.load(managerHandler, section);
+			case "basic" -> (T) BasicCallDefinition.load(managerHandler, section);
 		};
 	}
+	
+	@NotNull
+	public abstract JsonObject save();
 	
 }

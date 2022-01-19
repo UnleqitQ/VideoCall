@@ -1,7 +1,7 @@
 package com.unleqitq.videocall.rootserver.managers;
 
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
-import com.unleqitq.videocall.sharedclasses.user.IUserManager;
+import com.unleqitq.videocall.sharedclasses.user.AbstractUserManager;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class UserManager implements IUserManager {
+public class UserManager extends AbstractUserManager {
 	
 	@NotNull
 	private final IManagerHandler managerHandler;
@@ -43,6 +43,11 @@ public class UserManager implements IUserManager {
 		return getUserMap().get(uuid);
 	}
 	
+	@Override
+	public void addUser(@NotNull User user) {
+		userMap.put(user.getUuid(), user);
+	}
+	
 	
 	@NotNull
 	public User createUser(@NotNull String firstname, @NotNull String lastname, @NotNull String username) {
@@ -50,6 +55,13 @@ public class UserManager implements IUserManager {
 		do {
 			uuid = UUID.randomUUID();
 		} while (getUserMap().containsKey(uuid));
+		User user = new User(managerHandler, uuid, firstname, lastname, username);
+		getUserMap().put(uuid, user);
+		return user;
+	}
+	
+	@NotNull
+	public User createUser(@NotNull UUID uuid, @NotNull String firstname, @NotNull String lastname, @NotNull String username) {
 		User user = new User(managerHandler, uuid, firstname, lastname, username);
 		getUserMap().put(uuid, user);
 		return user;

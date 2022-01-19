@@ -1,7 +1,9 @@
 package com.unleqitq.videocall.sharedclasses.call;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -80,8 +82,9 @@ public class TeamCallDefinition extends CallDefinition {
 	}
 	
 	@NotNull
-	public static TeamCallDefinition load(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull JsonObject section) {
-		TeamCallDefinition callDefinition = new TeamCallDefinition(managerHandler, uuid,
+	public static TeamCallDefinition load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
+		TeamCallDefinition callDefinition = new TeamCallDefinition(managerHandler,
+				UUID.fromString(section.get("uuid").getAsString()),
 				UUID.fromString(section.get("creator").getAsString()));
 		for (JsonElement element : section.getAsJsonArray("members")) {
 			callDefinition.addMember(UUID.fromString(element.getAsString()));
@@ -93,6 +96,30 @@ public class TeamCallDefinition extends CallDefinition {
 			callDefinition.addTeam(UUID.fromString(element.getAsString()));
 		}
 		return callDefinition;
+	}
+	
+	@NotNull
+	@Override
+	public JsonObject save() {
+		JsonObject object = new JsonObject();
+		object.add("uuid", new JsonPrimitive(getUuid().toString()));
+		object.add("creator", new JsonPrimitive(getCreator().toString()));
+		JsonArray memberArray = new JsonArray(members.size());
+		JsonArray deniedArray = new JsonArray(denied.size());
+		JsonArray teamArray = new JsonArray(teams.size());
+		for (UUID user : members) {
+			memberArray.add(user.toString());
+		}
+		for (UUID user : denied) {
+			deniedArray.add(user.toString());
+		}
+		for (UUID team : teams) {
+			teamArray.add(team.toString());
+		}
+		object.add("members", memberArray);
+		object.add("denied", deniedArray);
+		object.add("teams", teamArray);
+		return object;
 	}
 	
 }

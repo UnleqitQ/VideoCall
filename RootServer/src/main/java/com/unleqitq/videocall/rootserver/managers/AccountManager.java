@@ -7,8 +7,9 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
-import com.unleqitq.videocall.sharedclasses.team.AbstractTeamManager;
-import com.unleqitq.videocall.sharedclasses.team.Team;
+import com.unleqitq.videocall.sharedclasses.account.AbstractAccountManager;
+import com.unleqitq.videocall.sharedclasses.account.Account;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,13 +22,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class TeamManager extends AbstractTeamManager {
+public class AccountManager extends AbstractAccountManager {
 	
 	@NotNull
 	private final IManagerHandler managerHandler;
 	
 	
-	public TeamManager(@NotNull IManagerHandler managerHandler) {
+	public AccountManager(@NotNull IManagerHandler managerHandler) {
 		this.managerHandler = managerHandler;
 	}
 	
@@ -38,19 +39,32 @@ public class TeamManager extends AbstractTeamManager {
 	}
 	
 	@NotNull
-	private final Map<UUID, Team> teamMap = MapUtils.synchronizedMap(new HashMap<>());
-	
+	private final Map<UUID, Account> accountMap = MapUtils.synchronizedMap(new HashMap<>());
+	@NotNull
+	private final Map<String, Account> accountNameMap = MapUtils.synchronizedMap(new HashMap<>());
 	
 	@NotNull
 	@Override
-	public Map<UUID, Team> getTeamMap() {
-		return teamMap;
+	public Map<String, Account> getAccountNameMap() {
+		return accountNameMap;
+	}
+	
+	@NotNull
+	@Override
+	public Map<UUID, Account> getAccountMap() {
+		return accountMap;
 	}
 	
 	@Nullable
 	@Override
-	public Team getTeam(@NotNull UUID uuid) {
-		return getTeamMap().get(uuid);
+	public Account getAccount(@NotNull UUID uuid) {
+		return accountMap.get(uuid);
+	}
+	
+	@Nullable
+	@Override
+	public Account getAccount(@NotNull String username) {
+		return accountNameMap.get(username);
 	}
 	
 	@Override
@@ -61,8 +75,8 @@ public class TeamManager extends AbstractTeamManager {
 			file.createNewFile();
 		}
 		JsonArray array = new JsonArray();
-		for (Team team : teamMap.values()) {
-			array.add(team.save());
+		for (Account account : accountMap.values()) {
+			array.add(account.save());
 		}
 		JsonWriter writer = new JsonWriter(new FileWriter(file));
 		new Gson().toJson(array, writer);
@@ -70,10 +84,12 @@ public class TeamManager extends AbstractTeamManager {
 	}
 	
 	@Override
-	public void addTeam(@NotNull Team team) {
-		teamMap.put(team.getUuid(), team);
+	public void addAccount(@NotNull Account account) {
+		accountMap.put(account.getUuid(), account);
+		accountNameMap.put(account.getUsername(), account);
 	}
 	
+	@Override
 	public void load(@NotNull File file) throws IOException {
 		if (!file.exists()) {
 			return;
@@ -81,21 +97,27 @@ public class TeamManager extends AbstractTeamManager {
 		JsonReader reader = new JsonReader(new FileReader(file));
 		JsonArray array = JsonParser.parseReader(reader).getAsJsonArray();
 		for (JsonElement element : array) {
-			addTeam(Team.load(managerHandler, element.getAsJsonObject()));
+			try {
+				addAccount(Account.load(managerHandler, element.getAsJsonObject()));
+			} catch (DecoderException e) {
+				e.printStackTrace();
+			}
 		}
 		reader.close();
 	}
 	
 	
-	@NotNull
-	public Team createTeam(@NotNull UUID creator, @NotNull String name) {
+	@Nullable
+	public Account createAccount(@NotNull String username, @NotNull byte[] password) {
+		if (accountNameMap.containsKey(username))
+			return null;
 		UUID uuid;
 		do {
 			uuid = UUID.randomUUID();
-		} while (getTeamMap().containsKey(uuid));
-		Team team = new Team(managerHandler, uuid, creator, name);
-		getTeamMap().put(uuid, team);
-		return team;
+		} while (getAccountMap().containsKey(uuid));
+		Account account = new Account(managerHandler, uuid, username, password);
+		addAccount(account);
+		return account;
 	}
 	
 }

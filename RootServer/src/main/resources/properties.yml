@@ -5,3 +5,4 @@ network:
       port: 1000
   maxTimeDifference: 4000
 
+maxPasswordDelay: 1000

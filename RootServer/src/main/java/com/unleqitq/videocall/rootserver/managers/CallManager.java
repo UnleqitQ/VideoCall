@@ -1,19 +1,29 @@
 package com.unleqitq.videocall.rootserver.managers;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import com.unleqitq.videocall.sharedclasses.call.BasicCallDefinition;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
-import com.unleqitq.videocall.sharedclasses.call.ICallManager;
+import com.unleqitq.videocall.sharedclasses.call.AbstractCallManager;
 import com.unleqitq.videocall.sharedclasses.call.TeamCallDefinition;
 import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class CallManager implements ICallManager {
+public class CallManager extends AbstractCallManager {
 	
 	@NotNull
 	private final Map<UUID, CallDefinition> callMap = MapUtils.synchronizedMap(new HashMap<>());
@@ -63,6 +73,39 @@ public class CallManager implements ICallManager {
 		BasicCallDefinition call = new BasicCallDefinition(managerHandler, callId, creator);
 		getCallMap().put(callId, call);
 		return call;
+	}
+	
+	public void save(@NotNull File file) throws IOException {
+		if (!file.exists()) {
+			if (!file.getParentFile().exists())
+				file.getParentFile().mkdirs();
+			file.createNewFile();
+		}
+		JsonArray array = new JsonArray();
+		for (CallDefinition callDefinition : callMap.values()) {
+			array.add(callDefinition.save());
+		}
+		JsonWriter writer = new JsonWriter(new FileWriter(file));
+		new Gson().toJson(array, writer);
+		writer.close();
+	}
+	
+	@Override
+	public void load(@NotNull File file) throws IOException {
+		if (!file.exists()) {
+			return;
+		}
+		JsonReader reader = new JsonReader(new FileReader(file));
+		JsonArray array = JsonParser.parseReader(reader).getAsJsonArray();
+		for (JsonElement element : array) {
+			addCall(CallDefinition.load(managerHandler, element.getAsJsonObject()));
+		}
+		reader.close();
+	}
+	
+	@Override
+	public void addCall(@NotNull CallDefinition call) {
+		callMap.put(call.getUuid(), call);
 	}
 	
 }

@@ -1,17 +1,17 @@
 package com.unleqitq.videocall.rootserver;
 
-import com.unleqitq.videocall.rootserver.managers.CallManager;
-import com.unleqitq.videocall.rootserver.managers.ManagerHandler;
-import com.unleqitq.videocall.rootserver.managers.TeamManager;
-import com.unleqitq.videocall.rootserver.managers.UserManager;
+import com.unleqitq.videocall.rootserver.managers.*;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.Server;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.account.Account;
+import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,7 +62,84 @@ public class RootServer {
 		thread.start();
 		managerHandler = new ManagerHandler();
 		managerHandler.setCallManager(new CallManager(managerHandler)).setTeamManager(
-				new TeamManager(managerHandler)).setUserManager(new UserManager(managerHandler));
+				new TeamManager(managerHandler)).setUserManager(new UserManager(managerHandler)).setAccountManager(
+				new AccountManager(managerHandler)).setConfiguration(configuration);
+		try {
+			File file = new File(new File("./").getAbsoluteFile().getParent(), "accounts.json");
+			managerHandler.getAccountManager().load(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			File file = new File(new File("./").getAbsoluteFile().getParent(), "users.json");
+			managerHandler.getUserManager().load(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			File file = new File(new File("./").getAbsoluteFile().getParent(), "calls.json");
+			managerHandler.getCallManager().load(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			File file = new File(new File("./").getAbsoluteFile().getParent(), "teams.json");
+			managerHandler.getTeamManager().load(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		{
+			MessageDigest md = MessageDigest.getInstance(MessageDigestAlgorithms.SHA_1);
+			md.update("root".getBytes());
+			createUser("root", md.digest(), "Root", "Tree");
+		}
+		
+		saveAccounts();
+		saveCalls();
+		saveTeams();
+		saveUsers();
+	}
+	
+	public void createUser(@NotNull String username, @NotNull byte[] password, @NotNull String firstname, @NotNull String lastname) {
+		Account account = managerHandler.getAccountManager().createAccount("root", password);
+		managerHandler.getUserManager().createUser(account.getUuid(), firstname, lastname, username);
+	}
+	
+	public void saveAccounts() {
+		try {
+			File file = new File(new File("./").getAbsoluteFile().getParent(), "accounts.json");
+			managerHandler.getAccountManager().save(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void saveCalls() {
+		try {
+			File file = new File(new File("./").getAbsoluteFile().getParent(), "calls.json");
+			managerHandler.getCallManager().save(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void saveTeams() {
+		try {
+			File file = new File(new File("./").getAbsoluteFile().getParent(), "teams.json");
+			managerHandler.getTeamManager().save(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void saveUsers() {
+		try {
+			File file = new File(new File("./").getAbsoluteFile().getParent(), "users.json");
+			managerHandler.getUserManager().save(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void loadConfig() {
