@@ -13,9 +13,9 @@ public interface ICallManager {
 	public IManagerHandler getManagerHandler();
 	
 	@NotNull
-	public Map<UUID, Call> getCallMap();
+	public Map<UUID, CallDefinition> getCallMap();
 	
 	@Nullable
-	public <T extends Call> T getCall(@NotNull UUID callId);
+	public <T extends CallDefinition> T getCall(@NotNull UUID callId);
 	
 }

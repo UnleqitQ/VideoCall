@@ -1,7 +1,9 @@
 package com.unleqitq.videocall.sharedclasses.team;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
-import com.unleqitq.videocall.sharedclasses.call.Call;
+import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -13,17 +15,30 @@ public class Team {
 	
 	@NotNull
 	private IManagerHandler managerHandler;
+	
 	@NotNull
 	private final UUID uuid;
+	
 	@NotNull
 	private UUID creator;
 	@NotNull
 	private final Set<UUID> members = new HashSet<>();
+	@NotNull
+	private String name;
 	
-	public Team(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
+	public Team(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator, @NotNull String name) {
 		this.managerHandler = managerHandler;
 		this.uuid = uuid;
 		this.creator = creator;
+		this.name = name;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 	public void setCreatorId(@NotNull UUID creator) {
@@ -57,7 +72,7 @@ public class Team {
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;
-		if (!(o instanceof Call call))
+		if (!(o instanceof CallDefinition call))
 			return false;
 		return getUuid().equals(call.getUuid());
 	}
@@ -65,6 +80,16 @@ public class Team {
 	@Override
 	public int hashCode() {
 		return Objects.hash(getUuid());
+	}
+	
+	@NotNull
+	public static Team load(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull JsonObject section) {
+		Team team = new Team(managerHandler, uuid, UUID.fromString(section.get("creator").getAsString()),
+				section.get("name").getAsString());
+		for (JsonElement element : section.getAsJsonArray("members")) {
+			team.addUser(UUID.fromString(element.getAsString()));
+		}
+		return team;
 	}
 	
 }

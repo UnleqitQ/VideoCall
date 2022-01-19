@@ -1,10 +1,10 @@
-package com.unleqitq.videocall.rootserver;
+package com.unleqitq.videocall.rootserver.managers;
 
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
-import com.unleqitq.videocall.sharedclasses.call.BasicCall;
-import com.unleqitq.videocall.sharedclasses.call.Call;
+import com.unleqitq.videocall.sharedclasses.call.BasicCallDefinition;
+import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.call.ICallManager;
-import com.unleqitq.videocall.sharedclasses.call.TeamCall;
+import com.unleqitq.videocall.sharedclasses.call.TeamCallDefinition;
 import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +16,7 @@ import java.util.UUID;
 public class CallManager implements ICallManager {
 	
 	@NotNull
-	private final Map<UUID, Call> callMap = MapUtils.synchronizedMap(new HashMap<>());
+	private final Map<UUID, CallDefinition> callMap = MapUtils.synchronizedMap(new HashMap<>());
 	@NotNull
 	private final IManagerHandler managerHandler;
 	
@@ -33,34 +33,34 @@ public class CallManager implements ICallManager {
 	
 	@NotNull
 	@Override
-	public Map<UUID, Call> getCallMap() {
+	public Map<UUID, CallDefinition> getCallMap() {
 		return callMap;
 	}
 	
 	@Nullable
 	@Override
-	public <T extends Call> T getCall(@NotNull UUID callId) {
+	public <T extends CallDefinition> T getCall(@NotNull UUID callId) {
 		return (T) getCallMap().get(callId);
 	}
 	
 	@NotNull
-	public TeamCall createTeamCall(@NotNull UUID creator) {
+	public TeamCallDefinition createTeamCall(@NotNull UUID creator) {
 		UUID callId;
 		do {
 			callId = UUID.randomUUID();
 		} while (getCallMap().containsKey(callId));
-		TeamCall call = new TeamCall(managerHandler, callId, creator);
+		TeamCallDefinition call = new TeamCallDefinition(managerHandler, callId, creator);
 		getCallMap().put(callId, call);
 		return call;
 	}
 	
 	@NotNull
-	public BasicCall createBasicCall(@NotNull UUID creator) {
+	public BasicCallDefinition createBasicCall(@NotNull UUID creator) {
 		UUID callId;
 		do {
 			callId = UUID.randomUUID();
 		} while (getCallMap().containsKey(callId));
-		BasicCall call = new BasicCall(managerHandler, callId, creator);
+		BasicCallDefinition call = new BasicCallDefinition(managerHandler, callId, creator);
 		getCallMap().put(callId, call);
 		return call;
 	}

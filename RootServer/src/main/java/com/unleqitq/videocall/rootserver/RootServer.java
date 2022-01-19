@@ -1,5 +1,9 @@
 package com.unleqitq.videocall.rootserver;
 
+import com.unleqitq.videocall.rootserver.managers.CallManager;
+import com.unleqitq.videocall.rootserver.managers.ManagerHandler;
+import com.unleqitq.videocall.rootserver.managers.TeamManager;
+import com.unleqitq.videocall.rootserver.managers.UserManager;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.Server;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
@@ -17,19 +21,31 @@ import java.util.Set;
 public class RootServer {
 	
 	@NotNull
-	
 	private static RootServer instance;
-	@NotNull YAMLConfiguration configuration = new YAMLConfiguration();
-	@NotNull Server server;
-	@NotNull Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());
-	@NotNull Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
-	@NotNull Set<CallConnection> callConnections = Collections.synchronizedSet(new HashSet<>());
-	@NotNull Set<AccessConnection> accessConnections = Collections.synchronizedSet(new HashSet<>());
-	@NotNull PriorityQueue<CallConnection> callQueue = new PriorityQueue<>(
+	
+	
+	@NotNull
+	private final ManagerHandler managerHandler;
+	@NotNull
+	private final YAMLConfiguration configuration = new YAMLConfiguration();
+	@NotNull
+	private final Server server;
+	@NotNull
+	private final Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull
+	private final Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull
+	private final Set<CallConnection> callConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull
+	private final Set<AccessConnection> accessConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull
+	public PriorityQueue<CallConnection> callQueue = new PriorityQueue<>(
 			(c1, c2) -> (int) (c1.freeMemory - c2.freeMemory));
-	@NotNull PriorityQueue<AccessConnection> accessQueue = new PriorityQueue<>(
+	@NotNull
+	public PriorityQueue<AccessConnection> accessQueue = new PriorityQueue<>(
 			(c1, c2) -> (int) (c1.freeMemory - c2.freeMemory));
-	@NotNull Thread thread;
+	@NotNull
+	private final Thread thread;
 	
 	public RootServer() throws IOException, NoSuchAlgorithmException {
 		instance = this;
@@ -44,6 +60,9 @@ public class RootServer {
 		server.start();
 		thread = new Thread(this::loop);
 		thread.start();
+		managerHandler = new ManagerHandler();
+		managerHandler.setCallManager(new CallManager(managerHandler)).setTeamManager(
+				new TeamManager(managerHandler)).setUserManager(new UserManager(managerHandler));
 	}
 	
 	private void loadConfig() {
@@ -138,6 +157,10 @@ public class RootServer {
 		AccessConnection accessConnection = new AccessConnection(baseConnection.connection, this);
 		accessConnections.add(accessConnection);
 		accessQueue.add(accessConnection);
+	}
+	
+	public ManagerHandler getManagerHandler() {
+		return managerHandler;
 	}
 	
 	@NotNull

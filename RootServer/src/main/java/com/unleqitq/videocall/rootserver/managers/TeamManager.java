@@ -1,4 +1,4 @@
-package com.unleqitq.videocall.rootserver;
+package com.unleqitq.videocall.rootserver.managers;
 
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import com.unleqitq.videocall.sharedclasses.team.ITeamManager;
@@ -45,12 +45,12 @@ public class TeamManager implements ITeamManager {
 	
 	
 	@NotNull
-	public Team createTeam(@NotNull UUID creator) {
+	public Team createTeam(@NotNull UUID creator, @NotNull String name) {
 		UUID uuid;
 		do {
 			uuid = UUID.randomUUID();
 		} while (getTeamMap().containsKey(uuid));
-		Team team = new Team(managerHandler, uuid, creator);
+		Team team = new Team(managerHandler, uuid, creator, name);
 		getTeamMap().put(uuid, team);
 		return team;
 	}

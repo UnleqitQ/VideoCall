@@ -1,4 +1,4 @@
-package com.unleqitq.videocall.rootserver;
+package com.unleqitq.videocall.rootserver.managers;
 
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import com.unleqitq.videocall.sharedclasses.user.IUserManager;

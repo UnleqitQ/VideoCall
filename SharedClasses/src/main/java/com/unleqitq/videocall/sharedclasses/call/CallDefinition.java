@@ -1,5 +1,6 @@
 package com.unleqitq.videocall.sharedclasses.call;
 
+import com.google.gson.JsonObject;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -8,7 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-public abstract class Call {
+public abstract class CallDefinition {
 	
 	@NotNull
 	private final IManagerHandler managerHandler;
@@ -17,7 +18,7 @@ public abstract class Call {
 	@NotNull
 	private UUID creator;
 	
-	public Call(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
+	public CallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
 		this.managerHandler = managerHandler;
 		this.uuid = uuid;
 		this.creator = creator;
@@ -58,14 +59,26 @@ public abstract class Call {
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;
-		if (!(o instanceof Call call))
+		if (!(o instanceof CallDefinition call))
 			return false;
 		return getUuid().equals(call.getUuid());
+	}
+	
+	public IManagerHandler getManagerHandler() {
+		return managerHandler;
 	}
 	
 	@Override
 	public int hashCode() {
 		return Objects.hash(getUuid());
+	}
+	
+	@NotNull
+	public static <T extends CallDefinition> T load(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull JsonObject section) {
+		return switch (section.get("type").getAsString()) {
+			case "team" -> (T) TeamCallDefinition.load(managerHandler, uuid, section);
+			case "basic" -> (T) BasicCallDefinition.load(managerHandler, uuid, section);
+		};
 	}
 	
 }

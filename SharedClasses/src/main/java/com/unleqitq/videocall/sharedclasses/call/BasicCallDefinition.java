@@ -1,5 +1,7 @@
 package com.unleqitq.videocall.sharedclasses.call;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -7,13 +9,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class BasicCall extends Call {
+public class BasicCallDefinition extends CallDefinition {
 	
 	
 	private Set<UUID> members = new HashSet<>();
 	private Set<UUID> denied = new HashSet<>();
 	
-	public BasicCall(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
+	public BasicCallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
 		super(managerHandler, uuid, creator);
 	}
 	
@@ -51,6 +53,19 @@ public class BasicCall extends Call {
 		result.addAll(members);
 		result.removeAll(denied);
 		return result;
+	}
+	
+	@NotNull
+	public static BasicCallDefinition load(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull JsonObject section) {
+		BasicCallDefinition callDefinition = new BasicCallDefinition(managerHandler, uuid,
+				UUID.fromString(section.get("creator").getAsString()));
+		for (JsonElement element : section.getAsJsonArray("members")) {
+			callDefinition.addMember(UUID.fromString(element.getAsString()));
+		}
+		for (JsonElement element : section.getAsJsonArray("denied")) {
+			callDefinition.denyMember(UUID.fromString(element.getAsString()));
+		}
+		return callDefinition;
 	}
 	
 }
