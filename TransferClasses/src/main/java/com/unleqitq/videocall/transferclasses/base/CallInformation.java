@@ -1,33 +1,29 @@
 package com.unleqitq.videocall.transferclasses.base;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.UUID;
 
-public class CallInformation implements Serializable {
+public record CallInformation(@NotNull String host, @NotNull int port, @NotNull UUID call) implements Serializable {
 	
 	@Serial
 	private static final long serialVersionUID = -2772669104831032800L;
 	
-	private final String host;
-	private final int port;
-	private final int callId;
-	
-	public CallInformation(String host, int port, int callId) {
-		this.host = host;
-		this.port = port;
-		this.callId = callId;
-	}
-	
+	@NotNull
 	public String getHost() {
 		return host;
 	}
 	
+	@NotNull
 	public int getPort() {
 		return port;
 	}
 	
-	public int getCallId() {
-		return callId;
+	@NotNull
+	public UUID getCall() {
+		return call;
 	}
 	
 }

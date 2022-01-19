@@ -75,10 +75,10 @@ public abstract class CallDefinition {
 	}
 	
 	@Nullable
-	public static <T extends CallDefinition> T load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
+	public static CallDefinition load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
 		return switch (section.get("type").getAsString()) {
-			case "team" -> (T) TeamCallDefinition.load(managerHandler, section);
-			case "basic" -> (T) BasicCallDefinition.load(managerHandler, section);
+			case "team" -> TeamCallDefinition.load(managerHandler, section);
+			case "basic" -> BasicCallDefinition.load(managerHandler, section);
 			default -> null;
 		};
 	}
