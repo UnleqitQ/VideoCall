@@ -1,7 +1,7 @@
 package com.unleqitq.videocall.callserver;
 
-import sharedclasses.ReceiveListener;
-import sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.ReceiveListener;
+import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.transferclasses.Data;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 

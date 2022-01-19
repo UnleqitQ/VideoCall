@@ -1,30 +1,69 @@
 package com.unleqitq.videocall.client;
 
-import sharedclasses.ClientNetworkConnection;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
+import com.unleqitq.videocall.sharedclasses.team.Team;
+import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.net.Socket;
+import java.time.Duration;
+import java.util.UUID;
 
 public class Client {
+	
 	
 	YAMLConfiguration configuration = new YAMLConfiguration();
 	ClientNetworkConnection connection;
 	
-	public Client() throws IOException {
+	@NotNull
+	private final String username;
+	@NotNull
+	private final String password;
+	private UUID userUuid;
+	
+	@NotNull
+	public Cache<UUID, User> userCache;
+	@NotNull
+	public Cache<UUID, Team> teamCache;
+	@NotNull
+	public Cache<UUID, CallDefinition> callCache;
+	@NotNull
+	String host;
+	int port;
+	
+	public Client(@NotNull String username, @NotNull String password, @NotNull String host, int port) throws
+			IOException {
 		loadConfig();
 		
+		userCache = CacheBuilder.newBuilder().expireAfterAccess(
+				Duration.ofSeconds(configuration.getLong("cacheDuration", 120))).expireAfterWrite(
+				Duration.ofSeconds(configuration.getLong("cacheDuration", 120))).build();
+		teamCache = CacheBuilder.newBuilder().expireAfterAccess(
+				Duration.ofSeconds(configuration.getLong("cacheDuration", 120))).expireAfterWrite(
+				Duration.ofSeconds(configuration.getLong("cacheDuration", 120))).build();
+		callCache = CacheBuilder.newBuilder().expireAfterAccess(
+				Duration.ofSeconds(configuration.getLong("cacheDuration", 120))).expireAfterWrite(
+				Duration.ofSeconds(configuration.getLong("cacheDuration", 120))).build();
+		
+		this.username = username;
+		this.password = password;
+		
 		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4000);
-		String host = configuration.getString("network.server.root.host", "localhost");
-		int port = configuration.getInt("network.server.root.port", 1000);
+		this.host = host;
+		this.port = port;
 		
 		Socket socket = new Socket(host, port);
 		connection = new ClientNetworkConnection(socket);
 		
 		try {
-			Thread.sleep(1000 * 6);
+			Thread.sleep(1000 * 4);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -79,8 +118,15 @@ public class Client {
 		}
 	}
 	
-	public static void main(String[] args) throws IOException {
-		Client client = new Client();
+	@NotNull
+	public String getUsername() {
+		return username;
 	}
+	
+	@NotNull
+	public String getPassword() {
+		return password;
+	}
+	
 	
 }

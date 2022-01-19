@@ -7,3 +7,5 @@ network:
 
 video:
   maxTimeDifference: 12000
+
+cacheDuration: 120

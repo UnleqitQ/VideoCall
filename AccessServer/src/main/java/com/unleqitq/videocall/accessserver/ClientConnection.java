@@ -1,7 +1,7 @@
 package com.unleqitq.videocall.accessserver;
 
-import sharedclasses.ReceiveListener;
-import sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.ReceiveListener;
+import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.transferclasses.Data;
 import org.jetbrains.annotations.NotNull;
 

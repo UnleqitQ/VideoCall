@@ -12,7 +12,7 @@
     <name>VideoCall</name>
 
     <modules>
-        <module>TransferClasses</module>
+        <module>SharedClasses</module>
         <module>RootServer</module>
         <module>AccessServer</module>
         <module>CallServer</module>
@@ -25,14 +25,14 @@
             <id>RootServer</id>
             <modules>
                 <module>RootServer</module>
-                <module>TransferClasses</module>
+                <module>SharedClasses</module>
             </modules>
         </profile>
         <profile>
             <id>Client</id>
             <modules>
                 <module>Client</module>
-                <module>TransferClasses</module>
+                <module>SharedClasses</module>
             </modules>
         </profile>
     </profiles>
@@ -55,13 +55,6 @@
                         <phase>package</phase>
                     </execution>
                 </executions>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.unleqitq.videocall.rootserver.RootServer</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
             </plugin>
         </plugins>
     </build>

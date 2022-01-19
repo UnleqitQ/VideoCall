@@ -1,10 +1,17 @@
 package com.unleqitq.videocall.rootserver;
 
 import com.unleqitq.videocall.rootserver.managers.*;
-import sharedclasses.ClientNetworkConnection;
-import sharedclasses.Server;
-import sharedclasses.ServerNetworkConnection;
-import sharedclasses.account.Account;
+import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.Server;
+import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.account.Account;
+import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
+import com.unleqitq.videocall.sharedclasses.team.Team;
+import com.unleqitq.videocall.sharedclasses.user.User;
+import com.unleqitq.videocall.transferclasses.base.ListData;
+import com.unleqitq.videocall.transferclasses.base.data.CallData;
+import com.unleqitq.videocall.transferclasses.base.data.TeamData;
+import com.unleqitq.videocall.transferclasses.base.data.UserData;
 import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -13,10 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 
 public class RootServer {
 	
@@ -103,9 +107,13 @@ public class RootServer {
 		System.out.println(managerHandler.getAccountManager().getAccount("root").save());
 	}
 	
-	public void createUser(@NotNull String username, @NotNull byte[] password, @NotNull String firstname, @NotNull String lastname) {
-		Account account = managerHandler.getAccountManager().createAccount("root", password);
-		managerHandler.getUserManager().createUser(account.getUuid(), firstname, lastname, username);
+	public void createUser(@NotNull String username, byte[] password, @NotNull String firstname, @NotNull String lastname) {
+		try {
+			Account account = managerHandler.getAccountManager().createAccount("root", password);
+			managerHandler.getUserManager().createUser(account.getUuid(), firstname, lastname, username);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void saveAccounts() {
@@ -238,6 +246,7 @@ public class RootServer {
 		accessQueue.add(accessConnection);
 	}
 	
+	@NotNull
 	public ManagerHandler getManagerHandler() {
 		return managerHandler;
 	}
@@ -247,8 +256,100 @@ public class RootServer {
 		return instance;
 	}
 	
-	public void onUserChange() {
+	public void broadcastUser(@NotNull UUID uuid) {
+		User user = managerHandler.getUserManager().getUser(uuid);
+		if (user != null) {
+			broadcastUser(user);
+		}
+	}
 	
+	public void broadcastTeam(@NotNull UUID uuid) {
+		Team team = managerHandler.getTeamManager().getTeam(uuid);
+		if (team != null) {
+			broadcastTeam(team);
+		}
+	}
+	
+	public void broadcastCall(@NotNull UUID uuid) {
+		CallDefinition call = managerHandler.getCallManager().getCall(uuid);
+		if (call != null) {
+			broadcastCall(call);
+		}
+	}
+	
+	public void broadcastUser(@NotNull User user) {
+		for (CallConnection callConnection : callQueue) {
+			callConnection.connection.send(new UserData(user));
+		}
+		for (AccessConnection accessConnection : accessQueue) {
+			accessConnection.connection.send(new UserData(user));
+		}
+	}
+	
+	public void broadcastTeam(@NotNull Team team) {
+		for (CallConnection callConnection : callQueue) {
+			callConnection.connection.send(new TeamData(team));
+		}
+		for (AccessConnection accessConnection : accessQueue) {
+			accessConnection.connection.send(new TeamData(team));
+		}
+	}
+	
+	public void broadcastCall(@NotNull CallDefinition call) {
+		for (CallConnection callConnection : callQueue) {
+			callConnection.connection.send(new CallData(call));
+		}
+		for (AccessConnection accessConnection : accessQueue) {
+			accessConnection.connection.send(new CallData(call));
+		}
+	}
+	
+	public void broadcastUsers(@NotNull Collection<User> users) {
+		Serializable[] array = new Serializable[users.size()];
+		int i = 0;
+		for (User user : users) {
+			array[i++] = new UserData(user);
+		}
+		ListData listData = new ListData(array);
+		
+		for (CallConnection callConnection : callQueue) {
+			callConnection.connection.send(listData);
+		}
+		for (AccessConnection accessConnection : accessQueue) {
+			accessConnection.connection.send(listData);
+		}
+	}
+	
+	public void broadcastTeams(@NotNull Collection<Team> teams) {
+		Serializable[] array = new Serializable[teams.size()];
+		int i = 0;
+		for (Team team : teams) {
+			array[i++] = new TeamData(team);
+		}
+		ListData listData = new ListData(array);
+		
+		for (CallConnection callConnection : callQueue) {
+			callConnection.connection.send(listData);
+		}
+		for (AccessConnection accessConnection : accessQueue) {
+			accessConnection.connection.send(listData);
+		}
+	}
+	
+	public void broadcastCalls(@NotNull Collection<CallDefinition> calls) {
+		Serializable[] array = new Serializable[calls.size()];
+		int i = 0;
+		for (CallDefinition call : calls) {
+			array[i++] = new CallData(call);
+		}
+		ListData listData = new ListData(array);
+		
+		for (CallConnection callConnection : callQueue) {
+			callConnection.connection.send(listData);
+		}
+		for (AccessConnection accessConnection : accessQueue) {
+			accessConnection.connection.send(listData);
+		}
 	}
 	
 }

@@ -1,6 +1,6 @@
 package com.unleqitq.videocall.accessserver.managers;
 
-import sharedclasses.IManagerHandler;
+import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.jetbrains.annotations.NotNull;
 
