@@ -29,7 +29,7 @@ public class ClientConnection implements ReceiveListener {
 	public void sendAccess() {
 		AccessConnection accessConnection = rootServer.accessQueue.peek();
 		connection.send(
-				new AccessInformation(accessConnection.connection.getSocket().getRemoteSocketAddress().toString(),
+				new AccessInformation(accessConnection.connection.getSocket().getInetAddress().getCanonicalHostName(),
 						accessConnection.port));
 	}
 	
@@ -43,8 +43,7 @@ public class ClientConnection implements ReceiveListener {
 					connection.send(new AuthenticationResult(-2, null));
 					return;
 				}
-				boolean flag = account.test(
-						authenticationData.passphrase(), authenticationData.time());
+				boolean flag = account.test(authenticationData.passphrase(), authenticationData.time());
 				if (flag)
 					connection.send(new AuthenticationResult(1, account.getUuid()));
 				else

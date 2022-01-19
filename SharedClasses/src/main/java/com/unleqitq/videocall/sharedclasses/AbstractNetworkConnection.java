@@ -10,6 +10,7 @@ import com.unleqitq.videocall.transferclasses.initialize.crypt.RSAKeyData;
 import javax.crypto.*;
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
@@ -25,6 +26,7 @@ public abstract class AbstractNetworkConnection {
 	protected boolean ready;
 	private Thread receiveThread;
 	public static int maxTimeDifference = 4000;
+	private boolean connected = true;
 	
 	public AbstractNetworkConnection(Socket socket) {
 		this.socket = socket;
@@ -92,7 +94,7 @@ public abstract class AbstractNetworkConnection {
 	public abstract void onConfirmation();
 	
 	public void loopReceive() {
-		while (socket.isConnected()) {
+		while (connected) {
 			runReceive();
 		}
 	}
@@ -114,6 +116,9 @@ public abstract class AbstractNetworkConnection {
 			else if (sendData instanceof ConfirmationData) {
 				onConfirmation();
 			}
+		} catch (SocketException | EOFException e) {
+			System.out.println("Connection is reset");
+			connected = false;
 		} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | ClassNotFoundException | ClassCastException e) {
 			e.printStackTrace();
 		}

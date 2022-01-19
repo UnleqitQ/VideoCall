@@ -3,9 +3,10 @@ network:
     root:
       host: localhost
       port: 1000
-  maxTimeDifference: 4000
+  maxTimeDifference: 4
 
 video:
-  maxTimeDifference: 12000
+  maxTimeDifference: 12
 
 cacheDuration: 120
+refreshInterval: 10

@@ -37,6 +37,8 @@ public class ClientLauncher implements ReceiveListener {
 		
 		Socket socket = new Socket(host, port);
 		connection = new ClientNetworkConnection(socket);
+		connection.setListener(this);
+		connection.init();
 		
 		try {
 			Thread.sleep(1000 * 4);

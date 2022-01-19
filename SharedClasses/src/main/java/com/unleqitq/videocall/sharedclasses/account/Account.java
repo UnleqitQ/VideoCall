@@ -90,7 +90,7 @@ public class Account {
 		JsonObject object = new JsonObject();
 		object.add("uuid", new JsonPrimitive(getUuid().toString()));
 		object.add("username", new JsonPrimitive(username));
-		object.add("firstname", new JsonPrimitive(Hex.encodeHexString(password)));
+		object.add("password", new JsonPrimitive(Hex.encodeHexString(password)));
 		return object;
 	}
 	

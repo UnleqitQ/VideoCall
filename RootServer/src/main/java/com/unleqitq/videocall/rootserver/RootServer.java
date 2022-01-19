@@ -108,12 +108,10 @@ public class RootServer {
 	}
 	
 	public void createUser(@NotNull String username, byte[] password, @NotNull String firstname, @NotNull String lastname) {
-		try {
-			Account account = managerHandler.getAccountManager().createAccount("root", password);
-			managerHandler.getUserManager().createUser(account.getUuid(), firstname, lastname, username);
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		}
+		Account account = managerHandler.getAccountManager().createAccount("root", password);
+		if (account == null)
+			return;
+		managerHandler.getUserManager().createUser(account.getUuid(), firstname, lastname, username);
 	}
 	
 	public void saveAccounts() {

@@ -70,8 +70,10 @@ public class CallServer implements ReceiveListener {
 		
 		rootConnection.setListener(this);
 		
+		rootConnection.init();
+		
 		try {
-			Thread.sleep(1000 * 6);
+			Thread.sleep(1000 * 3);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

@@ -23,7 +23,6 @@ public class ClientNetworkConnection extends AbstractNetworkConnection {
 		inputStream = socket.getInputStream();
 		objectOutputStream = new ObjectOutputStream(outputStream);
 		objectInputStream = new ObjectInputStream(inputStream);
-		init();
 	}
 	
 	@Override
