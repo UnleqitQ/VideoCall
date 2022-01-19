@@ -10,3 +10,4 @@ video:
 
 cacheDuration: 120
 refreshInterval: 10
+unknownValuesRequestInterval: 1000

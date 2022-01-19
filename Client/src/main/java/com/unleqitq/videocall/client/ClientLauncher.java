@@ -24,9 +24,13 @@ public class ClientLauncher implements ReceiveListener {
 	@NotNull
 	private final String password;
 	private UUID userUuid;
+	@NotNull
+	private UnknownValues unknownValues;
 	
 	public ClientLauncher(@NotNull String username, @NotNull String password) throws IOException {
 		loadConfig();
+		
+		unknownValues = new UnknownValues();
 		
 		this.username = username;
 		this.password = password;

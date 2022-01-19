@@ -170,12 +170,13 @@ public class AccessServer implements ReceiveListener {
 		clientConnections.add(new ClientConnection(baseConnection.connection, this));
 	}
 	
+	@NotNull
 	public static AccessServer getInstance() {
 		return instance;
 	}
 	
 	@Override
-	public void onReceive(Data data) {
+	public void onReceive(@NotNull Data data) {
 		if (data.getData() instanceof ListData) {
 			for (Serializable d0 : ((ListData) data.getData()).data()) {
 				if (d0 instanceof UserData) {
@@ -194,7 +195,27 @@ public class AccessServer implements ReceiveListener {
 					System.out.println(call);
 				}
 			}
+			return;
 		}
+		if (data.getData() instanceof UserData) {
+			User user = ((UserData) data.getData()).getUser(managerHandler);
+			managerHandler.getUserManager().addUser(user);
+			System.out.println(user);
+		}
+		if (data.getData() instanceof TeamData) {
+			Team team = ((TeamData) data.getData()).getTeam(managerHandler);
+			managerHandler.getTeamManager().addTeam(team);
+			System.out.println(team);
+		}
+		if (data.getData() instanceof CallData) {
+			CallDefinition call = ((CallData) data.getData()).getCall(managerHandler);
+			managerHandler.getCallManager().addCall(call);
+			System.out.println(call);
+		}
+	}
+	
+	public ManagerHandler getManagerHandler() {
+		return managerHandler;
 	}
 	
 }
