@@ -90,4 +90,9 @@ public class BasicCallDefinition extends CallDefinition {
 		return object;
 	}
 	
+	@Override
+	public String toString() {
+		return "BasicCallDefinition" + save();
+	}
+	
 }

@@ -122,4 +122,9 @@ public class TeamCallDefinition extends CallDefinition {
 		return object;
 	}
 	
+	@Override
+	public String toString() {
+		return "TeamCallDefinition" + save();
+	}
+	
 }

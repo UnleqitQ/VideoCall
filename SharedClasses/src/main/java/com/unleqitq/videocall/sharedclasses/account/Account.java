@@ -86,4 +86,9 @@ public class Account {
 		return object;
 	}
 	
+	@Override
+	public String toString() {
+		return "Account" + save();
+	}
+	
 }

@@ -247,4 +247,8 @@ public class RootServer {
 		return instance;
 	}
 	
+	public void onUserChange() {
+	
+	}
+	
 }

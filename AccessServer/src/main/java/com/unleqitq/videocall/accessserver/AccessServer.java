@@ -1,12 +1,23 @@
 package com.unleqitq.videocall.accessserver;
 
+import com.unleqitq.videocall.accessserver.managers.*;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.Server;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
+import com.unleqitq.videocall.sharedclasses.team.Team;
+import com.unleqitq.videocall.sharedclasses.user.User;
+import com.unleqitq.videocall.transferclasses.Data;
+import com.unleqitq.videocall.transferclasses.base.ListData;
+import com.unleqitq.videocall.transferclasses.base.data.CallData;
+import com.unleqitq.videocall.transferclasses.base.data.TeamData;
+import com.unleqitq.videocall.transferclasses.base.data.UserData;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import com.unleqitq.videocall.transferclasses.connection.MachineInformation;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.net.Socket;
@@ -15,19 +26,34 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AccessServer {
+public class AccessServer implements ReceiveListener {
 	
-	YAMLConfiguration configuration = new YAMLConfiguration();
-	Server server;
-	Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());
-	Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
-	Thread thread;
+	@NotNull
+	private static AccessServer instance;
+	
+	
+	@NotNull
+	private final ManagerHandler managerHandler;
+	
+	@NotNull YAMLConfiguration configuration = new YAMLConfiguration();
+	@NotNull Server server;
+	@NotNull Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
+	
+	@NotNull Thread thread;
 	long lastInfo = System.currentTimeMillis();
 	
 	ClientNetworkConnection rootConnection;
 	
 	public AccessServer() throws IOException, NoSuchAlgorithmException {
+		instance = this;
+		
 		loadConfig();
+		
+		managerHandler = new ManagerHandler();
+		managerHandler.setCallManager(new CallManager(managerHandler)).setTeamManager(
+				new TeamManager(managerHandler)).setUserManager(new UserManager(managerHandler)).setAccountManager(
+				new AccountManager(managerHandler)).setConfiguration(configuration);
 		
 		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4000);
 		
@@ -43,6 +69,8 @@ public class AccessServer {
 		
 		Socket socket = new Socket(host, port);
 		rootConnection = new ClientNetworkConnection(socket);
+		
+		rootConnection.setListener(this);
 		
 		try {
 			Thread.sleep(1000 * 6);
@@ -138,6 +166,33 @@ public class AccessServer {
 	public void addClient(BaseConnection baseConnection) {
 		baseConnections.remove(baseConnection);
 		clientConnections.add(new ClientConnection(baseConnection.connection, this));
+	}
+	
+	public static AccessServer getInstance() {
+		return instance;
+	}
+	
+	@Override
+	public void onReceive(Data data) {
+		if (data.getData() instanceof ListData) {
+			for (Serializable d0 : ((ListData) data.getData()).data()) {
+				if (d0 instanceof UserData) {
+					User user = ((UserData) d0).getUser(managerHandler);
+					managerHandler.getUserManager().addUser(user);
+					System.out.println(user);
+				}
+				if (d0 instanceof TeamData) {
+					Team team = ((TeamData) d0).getTeam(managerHandler);
+					managerHandler.getTeamManager().addTeam(team);
+					System.out.println(team);
+				}
+				if (d0 instanceof CallData) {
+					CallDefinition call = ((CallData) d0).getCall(managerHandler);
+					managerHandler.getCallManager().addCall(call);
+					System.out.println(call);
+				}
+			}
+		}
 	}
 	
 }

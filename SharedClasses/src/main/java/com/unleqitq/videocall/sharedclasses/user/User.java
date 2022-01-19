@@ -93,4 +93,9 @@ public class User {
 		return object;
 	}
 	
+	@Override
+	public String toString() {
+		return "User" + save();
+	}
+	
 }

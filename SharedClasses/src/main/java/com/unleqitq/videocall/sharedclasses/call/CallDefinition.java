@@ -86,4 +86,9 @@ public abstract class CallDefinition {
 	@NotNull
 	public abstract JsonObject save();
 	
+	@Override
+	public String toString() {
+		return "CallDefinition" + save();
+	}
+	
 }

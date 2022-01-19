@@ -107,4 +107,9 @@ public class Team {
 		return object;
 	}
 	
+	@Override
+	public String toString() {
+		return "Team" + save();
+	}
+	
 }
