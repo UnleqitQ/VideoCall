@@ -66,7 +66,7 @@ public abstract class AbstractNetworkConnection {
 		}
 		else {
 			try {
-				sendEnqueue(new MessageData(this, CryptoHandler.encrypt(data, aesKey)));
+				sendEnqueue(new MessageData(this, CryptoHandler.encrypt(new Data(data).timestamp(), aesKey)));
 			} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
 				e.printStackTrace();
 			}
@@ -114,7 +114,7 @@ public abstract class AbstractNetworkConnection {
 			else if (sendData instanceof ConfirmationData) {
 				onConfirmation();
 			}
-		} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | ClassNotFoundException e) {
+		} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | ClassNotFoundException | ClassCastException e) {
 			e.printStackTrace();
 		}
 	}

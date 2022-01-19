@@ -24,4 +24,9 @@ public class MachineInformation implements Serializable {
 		return freeMemory;
 	}
 	
+	@Override
+	public String toString() {
+		return "MachineInformation{ port=" + port + ", freeMemory=" + freeMemory + " }";
+	}
+	
 }

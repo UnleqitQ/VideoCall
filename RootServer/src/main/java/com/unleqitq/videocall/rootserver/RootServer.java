@@ -5,6 +5,7 @@ import com.unleqitq.videocall.sharedclasses.Server;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -15,18 +16,24 @@ import java.util.Set;
 
 public class RootServer {
 	
-	YAMLConfiguration configuration = new YAMLConfiguration();
-	Server server;
-	Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());
-	Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
-	Set<CallConnection> callConnections = Collections.synchronizedSet(new HashSet<>());
-	Set<AccessConnection> accessConnections = Collections.synchronizedSet(new HashSet<>());
-	PriorityQueue<CallConnection> callQueue = new PriorityQueue<>((c1, c2) -> (int) (c1.freeMemory - c2.freeMemory));
-	PriorityQueue<AccessConnection> accessQueue = new PriorityQueue<>(
+	@NotNull
+	
+	private static RootServer instance;
+	@NotNull YAMLConfiguration configuration = new YAMLConfiguration();
+	@NotNull Server server;
+	@NotNull Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull Set<CallConnection> callConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull Set<AccessConnection> accessConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull PriorityQueue<CallConnection> callQueue = new PriorityQueue<>(
 			(c1, c2) -> (int) (c1.freeMemory - c2.freeMemory));
-	Thread thread;
+	@NotNull PriorityQueue<AccessConnection> accessQueue = new PriorityQueue<>(
+			(c1, c2) -> (int) (c1.freeMemory - c2.freeMemory));
+	@NotNull Thread thread;
 	
 	public RootServer() throws IOException, NoSuchAlgorithmException {
+		instance = this;
+		
 		loadConfig();
 		
 		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4000);
@@ -46,9 +53,7 @@ public class RootServer {
 			try {
 				fis = new FileInputStream(file);
 				configuration.read(fis);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (ConfigurationException e) {
+			} catch (FileNotFoundException | ConfigurationException e) {
 				e.printStackTrace();
 			} finally {
 				if (fis != null)
@@ -116,23 +121,28 @@ public class RootServer {
 		RootServer rootServer = new RootServer();
 	}
 	
-	public void addCall(BaseConnection baseConnection) {
+	public void addCall(@NotNull BaseConnection baseConnection) {
 		baseConnections.remove(baseConnection);
 		CallConnection callConnection = new CallConnection(baseConnection.connection, this);
 		callConnections.add(callConnection);
 		callQueue.add(callConnection);
 	}
 	
-	public void addClient(BaseConnection baseConnection) {
+	public void addClient(@NotNull BaseConnection baseConnection) {
 		baseConnections.remove(baseConnection);
 		clientConnections.add(new ClientConnection(baseConnection.connection, this));
 	}
 	
-	public void addAccess(BaseConnection baseConnection) {
+	public void addAccess(@NotNull BaseConnection baseConnection) {
 		baseConnections.remove(baseConnection);
 		AccessConnection accessConnection = new AccessConnection(baseConnection.connection, this);
 		accessConnections.add(accessConnection);
 		accessQueue.add(accessConnection);
+	}
+	
+	@NotNull
+	public static RootServer getInstance() {
+		return instance;
 	}
 	
 }

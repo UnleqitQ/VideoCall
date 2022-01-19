@@ -22,8 +22,9 @@ public class Data implements Serializable {
 		return data;
 	}
 	
-	public void timestamp() {
+	public Data timestamp() {
 		sent = System.currentTimeMillis();
+		return this;
 	}
 	
 }
