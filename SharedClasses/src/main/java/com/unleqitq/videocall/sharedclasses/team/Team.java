@@ -1,5 +1,6 @@
 package com.unleqitq.videocall.sharedclasses.team;
 
+import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import com.unleqitq.videocall.sharedclasses.call.Call;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,13 +12,16 @@ import java.util.UUID;
 public class Team {
 	
 	@NotNull
+	private IManagerHandler managerHandler;
+	@NotNull
 	private final UUID uuid;
 	@NotNull
 	private UUID creator;
 	@NotNull
 	private final Set<UUID> members = new HashSet<>();
 	
-	public Team(@NotNull UUID uuid, @NotNull UUID creator) {
+	public Team(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
+		this.managerHandler = managerHandler;
 		this.uuid = uuid;
 		this.creator = creator;
 	}

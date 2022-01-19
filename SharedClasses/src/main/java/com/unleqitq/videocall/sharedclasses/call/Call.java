@@ -1,5 +1,6 @@
 package com.unleqitq.videocall.sharedclasses.call;
 
+import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -10,11 +11,14 @@ import java.util.function.Predicate;
 public abstract class Call {
 	
 	@NotNull
+	private final IManagerHandler managerHandler;
+	@NotNull
 	private final UUID uuid;
 	@NotNull
 	private UUID creator;
 	
-	public Call(@NotNull UUID uuid, @NotNull UUID creator) {
+	public Call(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
+		this.managerHandler = managerHandler;
 		this.uuid = uuid;
 		this.creator = creator;
 	}

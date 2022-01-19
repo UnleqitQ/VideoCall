@@ -1,5 +1,8 @@
-package com.unleqitq.videocall.sharedclasses.user;
+package com.unleqitq.videocall.rootserver;
 
+import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import com.unleqitq.videocall.sharedclasses.user.IUserManager;
+import com.unleqitq.videocall.sharedclasses.user.User;
 import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,6 +12,20 @@ import java.util.Map;
 import java.util.UUID;
 
 public class UserManager implements IUserManager {
+	
+	@NotNull
+	private final IManagerHandler managerHandler;
+	
+	
+	public UserManager(@NotNull IManagerHandler managerHandler) {
+		this.managerHandler = managerHandler;
+	}
+	
+	@NotNull
+	@Override
+	public IManagerHandler getManagerHandler() {
+		return managerHandler;
+	}
 	
 	@NotNull
 	private final Map<UUID, User> userMap = MapUtils.synchronizedMap(new HashMap<>());
@@ -33,7 +50,7 @@ public class UserManager implements IUserManager {
 		do {
 			uuid = UUID.randomUUID();
 		} while (getUserMap().containsKey(uuid));
-		User user = new User(this, uuid, firstname, lastname, username);
+		User user = new User(managerHandler, uuid, firstname, lastname, username);
 		getUserMap().put(uuid, user);
 		return user;
 	}

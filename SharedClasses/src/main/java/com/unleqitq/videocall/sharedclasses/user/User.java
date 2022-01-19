@@ -1,6 +1,7 @@
 package com.unleqitq.videocall.sharedclasses.user;
 
 import com.google.gson.JsonObject;
+import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -9,7 +10,7 @@ import java.util.UUID;
 public class User {
 	
 	@NotNull
-	private final IUserManager userManager;
+	private final IManagerHandler managerHandler;
 	
 	@NotNull
 	private final UUID uuid;
@@ -20,8 +21,8 @@ public class User {
 	@NotNull
 	private String username;
 	
-	public User(@NotNull IUserManager userManager, @NotNull UUID uuid, @NotNull String firstname, @NotNull String lastname, @NotNull String username) {
-		this.userManager = userManager;
+	public User(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull String firstname, @NotNull String lastname, @NotNull String username) {
+		this.managerHandler = managerHandler;
 		this.uuid = uuid;
 		this.firstname = firstname;
 		this.lastname = lastname;
@@ -75,10 +76,9 @@ public class User {
 	}
 	
 	@NotNull
-	public static User load(@NotNull IUserManager userManager, @NotNull UUID uuid, @NotNull JsonObject section) {
-		return new User(userManager, uuid, section.get("firstname").getAsString(),
-				section.get("lastname").getAsString(),
-				section.get("username").getAsString());
+	public static User load(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull JsonObject section) {
+		return new User(managerHandler, uuid, section.get("firstname").getAsString(),
+				section.get("lastname").getAsString(), section.get("username").getAsString());
 	}
 	
 }

@@ -1,5 +1,6 @@
 package com.unleqitq.videocall.sharedclasses.call;
 
+import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -12,8 +13,8 @@ public class BasicCall extends Call {
 	private Set<UUID> members = new HashSet<>();
 	private Set<UUID> denied = new HashSet<>();
 	
-	public BasicCall(UUID uuid, UUID creator) {
-		super(uuid, creator);
+	public BasicCall(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
+		super(managerHandler, uuid, creator);
 	}
 	
 	@Override

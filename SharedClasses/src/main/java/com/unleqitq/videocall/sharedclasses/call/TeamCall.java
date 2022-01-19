@@ -1,5 +1,6 @@
 package com.unleqitq.videocall.sharedclasses.call;
 
+import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -15,8 +16,8 @@ public class TeamCall extends Call {
 	@NotNull
 	private final Set<UUID> denied = new HashSet<>();
 	
-	public TeamCall(@NotNull UUID uuid, @NotNull UUID creator) {
-		super(uuid, creator);
+	public TeamCall(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
+		super(managerHandler, uuid, creator);
 	}
 	
 	@Override
