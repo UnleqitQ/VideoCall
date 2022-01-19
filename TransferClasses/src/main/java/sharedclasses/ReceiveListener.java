@@ -1,4 +1,4 @@
-package com.unleqitq.videocall.sharedclasses;
+package sharedclasses;
 
 import com.unleqitq.videocall.transferclasses.Data;
 

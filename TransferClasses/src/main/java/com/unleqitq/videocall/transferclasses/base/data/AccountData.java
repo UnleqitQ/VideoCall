@@ -1,8 +1,8 @@
 package com.unleqitq.videocall.transferclasses.base.data;
 
 import com.google.gson.JsonParser;
-import com.unleqitq.videocall.sharedclasses.IManagerHandler;
-import com.unleqitq.videocall.sharedclasses.account.Account;
+import sharedclasses.IManagerHandler;
+import sharedclasses.account.Account;
 import org.apache.commons.codec.DecoderException;
 import org.jetbrains.annotations.NotNull;
 

@@ -1,8 +1,8 @@
-package com.unleqitq.videocall.sharedclasses.account;
+package sharedclasses.account;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import sharedclasses.IManagerHandler;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.MessageDigestAlgorithms;

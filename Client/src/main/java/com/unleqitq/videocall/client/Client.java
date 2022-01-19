@@ -1,6 +1,6 @@
 package com.unleqitq.videocall.client;
 
-import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
+import sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;

@@ -1,8 +1,8 @@
 package com.unleqitq.videocall.transferclasses.base.data;
 
 import com.google.gson.JsonParser;
-import com.unleqitq.videocall.sharedclasses.IManagerHandler;
-import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
+import sharedclasses.IManagerHandler;
+import sharedclasses.call.CallDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;

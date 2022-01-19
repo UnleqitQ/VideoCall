@@ -1,4 +1,4 @@
-package com.unleqitq.videocall.sharedclasses.user;
+package sharedclasses.user;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

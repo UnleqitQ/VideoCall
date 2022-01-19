@@ -1,6 +1,6 @@
-package com.unleqitq.videocall.sharedclasses.call;
+package sharedclasses.call;
 
-import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

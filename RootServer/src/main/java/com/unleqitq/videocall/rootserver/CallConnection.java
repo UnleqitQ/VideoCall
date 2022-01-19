@@ -1,10 +1,10 @@
 package com.unleqitq.videocall.rootserver;
 
-import com.unleqitq.videocall.sharedclasses.ReceiveListener;
-import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
-import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
-import com.unleqitq.videocall.sharedclasses.team.Team;
-import com.unleqitq.videocall.sharedclasses.user.User;
+import sharedclasses.ReceiveListener;
+import sharedclasses.ServerNetworkConnection;
+import sharedclasses.call.CallDefinition;
+import sharedclasses.team.Team;
+import sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.Data;
 import com.unleqitq.videocall.transferclasses.base.ListData;
 import com.unleqitq.videocall.transferclasses.base.data.CallData;

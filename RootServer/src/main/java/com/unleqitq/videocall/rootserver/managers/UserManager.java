@@ -1,8 +1,8 @@
 package com.unleqitq.videocall.rootserver.managers;
 
-import com.unleqitq.videocall.sharedclasses.IManagerHandler;
-import com.unleqitq.videocall.sharedclasses.user.AbstractUserManager;
-import com.unleqitq.videocall.sharedclasses.user.User;
+import sharedclasses.IManagerHandler;
+import sharedclasses.user.AbstractUserManager;
+import sharedclasses.user.User;
 import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

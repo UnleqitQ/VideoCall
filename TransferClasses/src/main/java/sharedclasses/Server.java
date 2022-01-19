@@ -1,4 +1,4 @@
-package com.unleqitq.videocall.sharedclasses;
+package sharedclasses;
 
 import java.io.IOException;
 import java.net.ServerSocket;

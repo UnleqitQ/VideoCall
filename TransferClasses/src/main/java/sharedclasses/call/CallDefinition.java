@@ -1,7 +1,7 @@
-package com.unleqitq.videocall.sharedclasses.call;
+package sharedclasses.call;
 
 import com.google.gson.JsonObject;
-import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,7 +77,7 @@ public abstract class CallDefinition {
 	@Nullable
 	public static CallDefinition load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
 		return switch (section.get("type").getAsString()) {
-			case "team" -> TeamCallDefinition.load(managerHandler, section);
+			case "team" -> load(managerHandler, section);
 			case "basic" -> BasicCallDefinition.load(managerHandler, section);
 			default -> null;
 		};

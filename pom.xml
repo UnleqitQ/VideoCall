@@ -12,7 +12,6 @@
     <name>VideoCall</name>
 
     <modules>
-        <module>SharedClasses</module>
         <module>TransferClasses</module>
         <module>RootServer</module>
         <module>AccessServer</module>
@@ -26,7 +25,6 @@
             <id>RootServer</id>
             <modules>
                 <module>RootServer</module>
-                <module>SharedClasses</module>
                 <module>TransferClasses</module>
             </modules>
         </profile>
@@ -34,7 +32,6 @@
             <id>Client</id>
             <modules>
                 <module>Client</module>
-                <module>SharedClasses</module>
                 <module>TransferClasses</module>
             </modules>
         </profile>

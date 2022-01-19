@@ -1,10 +1,10 @@
 package com.unleqitq.videocall.rootserver;
 
 import com.unleqitq.videocall.rootserver.managers.*;
-import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
-import com.unleqitq.videocall.sharedclasses.Server;
-import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
-import com.unleqitq.videocall.sharedclasses.account.Account;
+import sharedclasses.ClientNetworkConnection;
+import sharedclasses.Server;
+import sharedclasses.ServerNetworkConnection;
+import sharedclasses.account.Account;
 import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;

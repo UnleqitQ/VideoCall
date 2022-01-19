@@ -1,8 +1,8 @@
-package com.unleqitq.videocall.sharedclasses.user;
+package sharedclasses.user;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;

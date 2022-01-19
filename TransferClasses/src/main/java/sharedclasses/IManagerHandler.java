@@ -1,9 +1,9 @@
-package com.unleqitq.videocall.sharedclasses;
+package sharedclasses;
 
-import com.unleqitq.videocall.sharedclasses.account.AbstractAccountManager;
-import com.unleqitq.videocall.sharedclasses.call.AbstractCallManager;
-import com.unleqitq.videocall.sharedclasses.team.AbstractTeamManager;
-import com.unleqitq.videocall.sharedclasses.user.AbstractUserManager;
+import sharedclasses.account.AbstractAccountManager;
+import sharedclasses.call.AbstractCallManager;
+import sharedclasses.team.AbstractTeamManager;
+import sharedclasses.user.AbstractUserManager;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.jetbrains.annotations.NotNull;
 

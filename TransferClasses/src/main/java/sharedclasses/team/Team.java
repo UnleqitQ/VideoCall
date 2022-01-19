@@ -1,11 +1,11 @@
-package com.unleqitq.videocall.sharedclasses.team;
+package sharedclasses.team;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.unleqitq.videocall.sharedclasses.IManagerHandler;
-import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
+import sharedclasses.IManagerHandler;
+import sharedclasses.call.CallDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
