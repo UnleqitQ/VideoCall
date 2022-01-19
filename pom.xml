@@ -17,6 +17,7 @@
         <module>AccessServer</module>
         <module>CallServer</module>
         <module>Client</module>
+        <module>CallClient</module>
     </modules>
 
 

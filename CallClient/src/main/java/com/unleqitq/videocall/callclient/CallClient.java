@@ -1,73 +1,52 @@
-package com.unleqitq.videocall.client;
+package com.unleqitq.videocall.callclient;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.unleqitq.videocall.client.managers.*;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
-import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
-import com.unleqitq.videocall.sharedclasses.team.Team;
-import com.unleqitq.videocall.sharedclasses.user.User;
+import com.unleqitq.videocall.sharedclasses.user.CallUser;
 import com.unleqitq.videocall.transferclasses.Data;
-import com.unleqitq.videocall.transferclasses.base.*;
-import com.unleqitq.videocall.transferclasses.base.data.CallData;
-import com.unleqitq.videocall.transferclasses.base.data.TeamData;
-import com.unleqitq.videocall.transferclasses.base.data.UserData;
+import com.unleqitq.videocall.transferclasses.base.AuthenticationData;
+import com.unleqitq.videocall.transferclasses.base.AuthenticationResult;
+import com.unleqitq.videocall.transferclasses.base.ListData;
+import com.unleqitq.videocall.transferclasses.base.data.CallUserData;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
-public class Client implements ReceiveListener {
+public class CallClient implements ReceiveListener {
 	
 	@NotNull
-	private static Client instance;
+	private static CallClient instance;
 	
 	YAMLConfiguration configuration = new YAMLConfiguration();
-	ClientNetworkConnection connection;
+	public ClientNetworkConnection connection;
 	
 	@NotNull
 	private final String username;
 	@NotNull
 	private final String password;
-	private UUID userUuid;
+	public UUID userUuid;
 	
 	@NotNull
-	public Cache<UUID, User> userCache;
-	@NotNull
-	public Cache<UUID, Team> teamCache;
-	@NotNull
-	public Cache<UUID, CallDefinition> callCache;
-	@NotNull
-	public ManagerHandler managerHandler;
+	public Map<UUID, CallUser> users;
 	@NotNull String host;
 	int port;
-	@NotNull
-	public UnknownValues unknownValues = new UnknownValues();
 	
 	@NotNull
 	public Thread refreshThread;
 	
-	public Client(@NotNull String username, @NotNull String password, @NotNull String host, int port) throws
+	public CallClient(@NotNull String username, @NotNull String password, @NotNull String host, int port) throws
 			IOException {
 		instance = this;
 		
 		loadConfig();
-		refreshThread = new Thread(this::refreshLoop);
-		
-		managerHandler = new ManagerHandler();
-		managerHandler.setCallManager(new CallManager(managerHandler)).setTeamManager(
-				new TeamManager(managerHandler)).setUserManager(new UserManager(managerHandler)).setAccountManager(
-				new AccountManager(managerHandler)).setConfiguration(configuration);
 		
 		Config.cacheDuration = clamp(configuration.getInt("cacheDuration", 120), 20, 300);
 		Config.unknownValuesRequestInterval = clamp(configuration.getInt("unknownValuesRequestInterval", 1000), 100,
@@ -78,15 +57,7 @@ public class Client implements ReceiveListener {
 				Math.min(120, Config.cacheDuration * 4 / 5));
 		Config.audioDuration = clamp(configuration.getFloat("audio.duration", 0.5f), 0.2f, 4f);
 		
-		userCache = CacheBuilder.newBuilder().expireAfterAccess(
-				Duration.ofSeconds(Config.cacheDuration * 1000L)).expireAfterWrite(
-				Duration.ofSeconds(Config.cacheDuration * 1000L)).build();
-		teamCache = CacheBuilder.newBuilder().expireAfterAccess(
-				Duration.ofSeconds(Config.cacheDuration * 1000L)).expireAfterWrite(
-				Duration.ofSeconds(Config.cacheDuration * 1000L)).build();
-		callCache = CacheBuilder.newBuilder().expireAfterAccess(
-				Duration.ofSeconds(Config.cacheDuration * 1000L)).expireAfterWrite(
-				Duration.ofSeconds(Config.cacheDuration * 1000L)).build();
+		users = new HashMap<>();
 		
 		this.username = username;
 		this.password = password;
@@ -128,68 +99,8 @@ public class Client implements ReceiveListener {
 	}
 	
 	@NotNull
-	public static Client getInstance() {
+	public static CallClient getInstance() {
 		return instance;
-	}
-	
-	@Nullable
-	public User getUser(UUID uuid) {
-		User user = userCache.asMap().get(uuid);
-		if (user == null)
-			unknownValues.users.add(uuid);
-		return user;
-	}
-	
-	@Nullable
-	public Team getTeam(UUID uuid) {
-		Team team = teamCache.asMap().get(uuid);
-		if (team == null)
-			unknownValues.teams.add(uuid);
-		return team;
-	}
-	
-	@Nullable
-	public CallDefinition getCall(UUID uuid) {
-		CallDefinition call = callCache.asMap().get(uuid);
-		if (call == null)
-			unknownValues.calls.add(uuid);
-		return call;
-	}
-	
-	private void unknownRequestLoop() {
-		while (true) {
-			sendUnknownRequest();
-			try {
-				Thread.sleep(Config.unknownValuesRequestInterval);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	private void sendUnknownRequest() {
-		Set<UUID> users = new HashSet<>(unknownValues.users);
-		unknownValues.users.clear();
-		Set<UUID> teams = new HashSet<>(unknownValues.teams);
-		unknownValues.teams.clear();
-		Set<UUID> calls = new HashSet<>(unknownValues.calls);
-		unknownValues.calls.clear();
-		connection.send(PackRequest.create(users, calls, teams));
-	}
-	
-	private void refreshLoop() {
-		while (true) {
-			sendRefreshRequest();
-			try {
-				Thread.sleep(Config.refreshInterval * 1000L);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	private void sendRefreshRequest() {
-		connection.send(new ClientListRequest(userUuid));
 	}
 	
 	private void loadConfig() {
@@ -255,20 +166,10 @@ public class Client implements ReceiveListener {
 		System.out.println(data.getData());
 		if (data.getData() instanceof ListData) {
 			for (Serializable d0 : ((ListData) data.getData()).data()) {
-				if (d0 instanceof UserData) {
-					User user = ((UserData) d0).getUser(managerHandler);
-					managerHandler.getUserManager().addUser(user);
+				if (d0 instanceof CallUserData) {
+					CallUser user = ((CallUserData) d0).getUser();
+					users.put(user.getUuid(), user);
 					System.out.println(user);
-				}
-				if (d0 instanceof TeamData) {
-					Team team = ((TeamData) d0).getTeam(managerHandler);
-					managerHandler.getTeamManager().addTeam(team);
-					System.out.println(team);
-				}
-				if (d0 instanceof CallData) {
-					CallDefinition call = ((CallData) d0).getCall(managerHandler);
-					managerHandler.getCallManager().addCall(call);
-					System.out.println(call);
 				}
 			}
 		}
