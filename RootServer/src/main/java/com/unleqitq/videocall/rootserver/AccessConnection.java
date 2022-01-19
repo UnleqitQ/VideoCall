@@ -2,11 +2,13 @@ package com.unleqitq.videocall.rootserver;
 
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.account.Account;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.Data;
 import com.unleqitq.videocall.transferclasses.base.ListData;
+import com.unleqitq.videocall.transferclasses.base.data.AccountData;
 import com.unleqitq.videocall.transferclasses.base.data.CallData;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 import com.unleqitq.videocall.transferclasses.base.data.UserData;
@@ -52,7 +54,9 @@ public class AccessConnection implements ReceiveListener {
 				rootServer.getManagerHandler().getUserManager().getUserMap().values());
 		Collection<Team> teams = Collections.unmodifiableCollection(
 				rootServer.getManagerHandler().getTeamManager().getTeamMap().values());
-		Serializable[] array = new Serializable[calls.size() + users.size() + teams.size()];
+		Collection<Account> accounts = Collections.unmodifiableCollection(
+				rootServer.getManagerHandler().getAccountManager().getAccountMap().values());
+		Serializable[] array = new Serializable[calls.size() + users.size() + teams.size() + accounts.size()];
 		
 		int i = 0;
 		for (CallDefinition call : calls) {
@@ -64,9 +68,13 @@ public class AccessConnection implements ReceiveListener {
 		for (Team team : teams) {
 			array[i++] = new TeamData(team);
 		}
+		for (Account account : accounts) {
+			array[i++] = new AccountData(account);
+		}
 		
 		ListData listData = new ListData(array);
 		connection.send(listData);
 	}
+	
 	
 }

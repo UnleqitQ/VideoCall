@@ -20,4 +20,9 @@ public record AccessInformation(@NotNull String host, @NotNull int port) impleme
 		return port;
 	}
 	
+	@Override
+	public String toString() {
+		return "AccessInformation{host='" + getHost() + "', port=" + getPort() + "}";
+	}
+	
 }

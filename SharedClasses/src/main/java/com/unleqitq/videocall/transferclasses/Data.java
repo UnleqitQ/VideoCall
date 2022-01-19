@@ -27,4 +27,9 @@ public class Data implements Serializable {
 		return this;
 	}
 	
+	@Override
+	public String toString() {
+		return "Data{difference=" + (double) getDifference() / 1000 + ", data=" + data + "}";
+	}
+	
 }

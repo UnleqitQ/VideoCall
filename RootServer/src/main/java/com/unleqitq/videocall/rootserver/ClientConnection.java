@@ -28,9 +28,11 @@ public class ClientConnection implements ReceiveListener {
 	
 	public void sendAccess() {
 		AccessConnection accessConnection = rootServer.accessQueue.peek();
-		connection.send(
+		AccessInformation information =
 				new AccessInformation(accessConnection.connection.getSocket().getInetAddress().getCanonicalHostName(),
-						accessConnection.port));
+						accessConnection.port);
+		System.out.println("sent" + information);
+		connection.send(information);
 	}
 	
 	@Override

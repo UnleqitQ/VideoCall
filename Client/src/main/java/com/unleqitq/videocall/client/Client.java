@@ -9,9 +9,7 @@ import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.Data;
-import com.unleqitq.videocall.transferclasses.base.ClientListRequest;
-import com.unleqitq.videocall.transferclasses.base.ListData;
-import com.unleqitq.videocall.transferclasses.base.PackRequest;
+import com.unleqitq.videocall.transferclasses.base.*;
 import com.unleqitq.videocall.transferclasses.base.data.CallData;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 import com.unleqitq.videocall.transferclasses.base.data.UserData;
@@ -23,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
@@ -106,7 +105,7 @@ public class Client implements ReceiveListener {
 		connection.init();
 		
 		try {
-			Thread.sleep(1000 * 4);
+			Thread.sleep(1000 * 2);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -114,6 +113,17 @@ public class Client implements ReceiveListener {
 		connection.send(new ConnectionInformation(ConnectionInformation.ClientType.CLIENT));
 		
 		refreshThread.start();
+		try {
+			Thread.sleep(1000 * 2);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		try {
+			connection.send(AuthenticationData.create(username, password));
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 	
 	@NotNull
@@ -259,6 +269,21 @@ public class Client implements ReceiveListener {
 					managerHandler.getCallManager().addCall(call);
 					System.out.println(call);
 				}
+			}
+		}
+		if (data.getData() instanceof AuthenticationResult result) {
+			switch (result.result()) {
+				case -2:
+					System.out.println("User doesn't exist");
+					System.exit(0);
+				case -1:
+					System.out.println("Some weird error");
+					System.exit(0);
+				case 0:
+					System.out.println("Password is wrong");
+					System.exit(0);
+				case 1:
+					userUuid = result.userUuid();
 			}
 		}
 	}

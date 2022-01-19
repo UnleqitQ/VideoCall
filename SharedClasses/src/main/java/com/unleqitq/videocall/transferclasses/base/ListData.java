@@ -15,4 +15,12 @@ public record ListData(@NotNull Serializable[] data) implements Serializable {
 		return data;
 	}
 	
+	@Override
+	public String toString() {
+		String s = "ListData[";
+		for (Serializable v : data)
+			s += v + ", ";
+		return s + "]";
+	}
+	
 }

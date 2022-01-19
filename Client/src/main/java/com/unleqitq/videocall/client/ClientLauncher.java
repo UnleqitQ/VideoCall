@@ -35,7 +35,7 @@ public class ClientLauncher implements ReceiveListener {
 		this.username = username;
 		this.password = password;
 		
-		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4000);
+		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4) * 1000;
 		String host = configuration.getString("network.server.root.host", "localhost");
 		int port = configuration.getInt("network.server.root.port", 1000);
 		
@@ -116,6 +116,7 @@ public class ClientLauncher implements ReceiveListener {
 	
 	@Override
 	public void onReceive(Data data) {
+		System.out.println(data);
 		if (data.getData() instanceof AccessInformation info) {
 			Thread thread0 = new Thread(() -> {
 				try {

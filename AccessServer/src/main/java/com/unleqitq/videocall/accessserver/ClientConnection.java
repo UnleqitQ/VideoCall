@@ -2,19 +2,19 @@ package com.unleqitq.videocall.accessserver;
 
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.account.Account;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.Data;
-import com.unleqitq.videocall.transferclasses.base.ClientListRequest;
-import com.unleqitq.videocall.transferclasses.base.ListData;
-import com.unleqitq.videocall.transferclasses.base.PackRequest;
+import com.unleqitq.videocall.transferclasses.base.*;
 import com.unleqitq.videocall.transferclasses.base.data.CallData;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 import com.unleqitq.videocall.transferclasses.base.data.UserData;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -83,6 +83,26 @@ public class ClientConnection implements ReceiveListener {
 				array[i++] = d;
 			}
 			connection.send(new ListData(array));
+		}
+		if (data.getData() instanceof AuthenticationData authenticationData) {
+			try {
+				Account account = rootServer.getManagerHandler().getAccountManager().getAccount(
+						authenticationData.username());
+				if (account == null) {
+					connection.send(new AuthenticationResult(-2, null));
+					return;
+				}
+				boolean flag = account.test(authenticationData.passphrase(), authenticationData.time());
+				if (flag)
+					connection.send(new AuthenticationResult(1, account.getUuid()));
+				else
+					connection.send(new AuthenticationResult(0, null));
+			} catch (NullPointerException e) {
+				connection.send(new AuthenticationResult(-2, null));
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+				connection.send(new AuthenticationResult(-1, null));
+			}
 		}
 	}
 	
