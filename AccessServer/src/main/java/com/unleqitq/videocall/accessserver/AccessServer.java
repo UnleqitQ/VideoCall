@@ -65,7 +65,6 @@ public class AccessServer implements ReceiveListener {
 		
 		server.start();
 		thread = new Thread(this::loop);
-		thread.start();
 		
 		String host = configuration.getString("network.server.root.host", "localhost");
 		port = configuration.getInt("network.server.root.port", 1000);
@@ -76,6 +75,8 @@ public class AccessServer implements ReceiveListener {
 		rootConnection.setListener(this);
 		
 		rootConnection.init();
+		
+		thread.start();
 		
 		try {
 			Thread.sleep(1000 * 3);

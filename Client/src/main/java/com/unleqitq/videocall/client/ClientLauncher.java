@@ -19,21 +19,14 @@ public class ClientLauncher implements ReceiveListener {
 	YAMLConfiguration configuration = new YAMLConfiguration();
 	ClientNetworkConnection connection;
 	
-	@NotNull
-	private final String username;
-	@NotNull
-	private final String password;
 	private UUID userUuid;
 	@NotNull
 	private UnknownValues unknownValues;
 	
-	public ClientLauncher(@NotNull String username, @NotNull String password) throws IOException {
+	public ClientLauncher() throws IOException {
 		loadConfig();
 		
 		unknownValues = new UnknownValues();
-		
-		this.username = username;
-		this.password = password;
 		
 		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4) * 1000;
 		String host = configuration.getString("network.server.root.host", "localhost");
@@ -100,18 +93,9 @@ public class ClientLauncher implements ReceiveListener {
 		}
 	}
 	
-	@NotNull
-	public String getUsername() {
-		return username;
-	}
-	
-	@NotNull
-	public String getPassword() {
-		return password;
-	}
 	
 	public static void main(String @NotNull [] args) throws IOException {
-		ClientLauncher client = new ClientLauncher(args[0], args[1]);
+		ClientLauncher client = new ClientLauncher();
 	}
 	
 	@Override
@@ -142,7 +126,7 @@ public class ClientLauncher implements ReceiveListener {
 				connection.getReceiveThread().interrupt();
 				
 				try {
-					Client client = new Client(username, password, info.host(), info.port());
+					Client client = new Client(info.host(), info.port());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

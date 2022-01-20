@@ -2,6 +2,7 @@ package com.unleqitq.videocall.client;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.unleqitq.videocall.client.gui.login.LoginGui;
 import com.unleqitq.videocall.client.managers.*;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
@@ -36,9 +37,12 @@ public class Client implements ReceiveListener {
 	ClientNetworkConnection connection;
 	
 	@NotNull
-	private final String username;
-	@NotNull
-	private final String password;
+	private final LoginGui loginGui = new LoginGui();
+	
+	@Nullable
+	private String username;
+	@Nullable
+	private String password;
 	private UUID userUuid;
 	
 	@NotNull
@@ -57,8 +61,7 @@ public class Client implements ReceiveListener {
 	@NotNull
 	public Thread refreshThread;
 	
-	public Client(@NotNull String username, @NotNull String password, @NotNull String host, int port) throws
-			IOException {
+	public Client(@NotNull String host, int port) throws IOException {
 		instance = this;
 		
 		loadConfig();
@@ -88,9 +91,6 @@ public class Client implements ReceiveListener {
 				Duration.ofSeconds(Config.cacheDuration * 1000L)).expireAfterWrite(
 				Duration.ofSeconds(Config.cacheDuration * 1000L)).build();
 		
-		this.username = username;
-		this.password = password;
-		
 		
 		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4) * 1000;
 		ClientNetworkConnection.maxTimeDifference = Math.max(1,
@@ -119,12 +119,8 @@ public class Client implements ReceiveListener {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		try {
-			connection.send(AuthenticationData.create(username, password));
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
+		
+		loginGui.show();
 	}
 	
 	@NotNull
@@ -276,19 +272,37 @@ public class Client implements ReceiveListener {
 			switch (result.result()) {
 				case -2:
 					System.out.println("User doesn't exist");
-					System.exit(0);
 				case -1:
 					System.out.println("Some weird error");
-					System.exit(0);
 				case 0:
 					System.out.println("Password is wrong");
-					System.exit(0);
 				case 1:
 					userUuid = result.userUuid();
+			}
+			try {
+				loginGui.resultQueue.put(result);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
 	
+	public void sendAuthentication() {
+		try {
+			connection.send(AuthenticationData.create(username, password));
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	
+	public void setPassword(String password) {
+		this.password = password;
+	}
 	
 	public static final class Config {
 		

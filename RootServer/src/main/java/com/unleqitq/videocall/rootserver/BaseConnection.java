@@ -19,6 +19,7 @@ public class BaseConnection implements ReceiveListener {
 	
 	@Override
 	public void onReceive(@NotNull Data data) {
+		System.out.println("XXXXXXXXXXXXXXXXXXXXX");
 		if (data.getData() instanceof ConnectionInformation) {
 			ConnectionInformation info = (ConnectionInformation) data.getData();
 			switch (info.getType()) {
