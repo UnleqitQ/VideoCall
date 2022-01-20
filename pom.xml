@@ -18,6 +18,7 @@
         <module>CallServer</module>
         <module>Client</module>
         <module>CallClient</module>
+        <module>SwingUtils</module>
     </modules>
 
 

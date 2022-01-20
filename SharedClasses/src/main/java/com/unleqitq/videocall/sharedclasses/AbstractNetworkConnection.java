@@ -69,7 +69,7 @@ public abstract class AbstractNetworkConnection {
 		else {
 			try {
 				Data data0 = new Data(data).timestamp();
-				System.out.println("Sending " + data0);
+				//System.out.println("Sending " + data0);
 				sendEnqueue(new MessageData(this, CryptoHandler.encrypt(data0, aesKey)));
 			} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
 				e.printStackTrace();
@@ -106,7 +106,7 @@ public abstract class AbstractNetworkConnection {
 			SendData sendData = (SendData) objectInputStream.readUnshared();
 			if (sendData instanceof CryptData) {
 				Data data = CryptoHandler.decrypt((CryptData) sendData, aesKey);
-				System.out.println("Received " + data);
+				//System.out.println("Received " + data);
 				if (data.getDifference() <= maxTimeDifference)
 					listener.onReceive(data);
 			}

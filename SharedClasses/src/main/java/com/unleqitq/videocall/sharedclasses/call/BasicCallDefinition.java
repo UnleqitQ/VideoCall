@@ -17,8 +17,8 @@ public class BasicCallDefinition extends CallDefinition {
 	private Set<UUID> members = new HashSet<>();
 	private Set<UUID> denied = new HashSet<>();
 	
-	public BasicCallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
-		super(managerHandler, uuid, creator);
+	public BasicCallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator, long time, String name) {
+		super(managerHandler, uuid, creator, time, name);
 	}
 	
 	@Override
@@ -61,7 +61,8 @@ public class BasicCallDefinition extends CallDefinition {
 	public static BasicCallDefinition load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
 		BasicCallDefinition callDefinition = new BasicCallDefinition(managerHandler,
 				UUID.fromString(section.get("uuid").getAsString()),
-				UUID.fromString(section.get("creator").getAsString()));
+				UUID.fromString(section.get("creator").getAsString()), section.get("time").getAsLong(),
+				section.get("name").getAsString());
 		for (JsonElement element : section.getAsJsonArray("members")) {
 			callDefinition.addMember(UUID.fromString(element.getAsString()));
 		}
@@ -87,6 +88,10 @@ public class BasicCallDefinition extends CallDefinition {
 		}
 		object.add("members", memberArray);
 		object.add("denied", deniedArray);
+		object.add("time", new JsonPrimitive(getTime()));
+		object.add("name", new JsonPrimitive(getName()));
+		object.add("created", new JsonPrimitive(getCreated()));
+		object.add("changed", new JsonPrimitive(getChanged()));
 		return object;
 	}
 	

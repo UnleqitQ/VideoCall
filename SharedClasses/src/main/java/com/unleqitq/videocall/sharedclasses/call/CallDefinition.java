@@ -18,13 +18,44 @@ public abstract class CallDefinition {
 	private final UUID uuid;
 	@NotNull
 	private UUID creator;
+	private long created;
+	private long changed;
+	private long time;
+	private String name;
 	
-	public CallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
+	public CallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator, long time, String name) {
 		this.managerHandler = managerHandler;
 		this.uuid = uuid;
 		this.creator = creator;
+		created = System.currentTimeMillis();
+		changed = System.currentTimeMillis();
+		this.time = time;
+		this.name = name;
 	}
 	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public void setTime(long time) {
+		this.time = time;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public long getChanged() {
+		return changed;
+	}
+	
+	public long getCreated() {
+		return created;
+	}
+	
+	public long getTime() {
+		return time;
+	}
 	
 	public void setCreatorId(@NotNull UUID creator) {
 		this.creator = creator;
@@ -76,11 +107,14 @@ public abstract class CallDefinition {
 	
 	@Nullable
 	public static CallDefinition load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
-		return switch (section.get("type").getAsString()) {
-			case "team" -> load(managerHandler, section);
+		CallDefinition callDefinition = switch (section.get("type").getAsString()) {
+			case "team" -> TeamCallDefinition.load(managerHandler, section);
 			case "basic" -> BasicCallDefinition.load(managerHandler, section);
 			default -> null;
 		};
+		callDefinition.changed = section.get("changed").getAsLong();
+		callDefinition.created = section.get("created").getAsLong();
+		return callDefinition;
 	}
 	
 	@NotNull

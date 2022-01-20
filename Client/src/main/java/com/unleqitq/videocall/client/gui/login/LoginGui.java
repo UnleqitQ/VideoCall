@@ -40,4 +40,12 @@ public class LoginGui {
 		loginFrame.setVisible(true);
 	}
 	
+	public void hide() {
+		loginFrame.setVisible(false);
+	}
+	
+	public void destroy() {
+		loginFrame.dispose();
+	}
+	
 }

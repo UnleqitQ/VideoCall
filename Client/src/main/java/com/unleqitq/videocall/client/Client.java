@@ -60,12 +60,15 @@ public class Client implements ReceiveListener {
 	
 	@NotNull
 	public Thread refreshThread;
+	@NotNull
+	public Thread unknownRequestThread;
 	
 	public Client(@NotNull String host, int port) throws IOException {
 		instance = this;
 		
 		loadConfig();
 		refreshThread = new Thread(this::refreshLoop);
+		unknownRequestThread = new Thread(this::unknownRequestLoop);
 		
 		managerHandler = new ManagerHandler();
 		managerHandler.setCallManager(new CallManager(managerHandler)).setTeamManager(
@@ -113,7 +116,6 @@ public class Client implements ReceiveListener {
 		
 		connection.send(new ConnectionInformation(ConnectionInformation.ClientType.CLIENT));
 		
-		refreshThread.start();
 		try {
 			Thread.sleep(1000 * 2);
 		} catch (InterruptedException e) {
@@ -121,6 +123,11 @@ public class Client implements ReceiveListener {
 		}
 		
 		loginGui.show();
+	}
+	
+	public void finishInit() {
+		refreshThread.start();
+		unknownRequestThread.start();
 	}
 	
 	@NotNull
@@ -157,8 +164,7 @@ public class Client implements ReceiveListener {
 			sendUnknownRequest();
 			try {
 				Thread.sleep(Config.unknownValuesRequestInterval);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			} catch (InterruptedException ignored) {
 			}
 		}
 	}
@@ -178,8 +184,7 @@ public class Client implements ReceiveListener {
 			sendRefreshRequest();
 			try {
 				Thread.sleep(Config.refreshInterval * 1000L);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			} catch (InterruptedException ignored) {
 			}
 		}
 	}
@@ -235,12 +240,12 @@ public class Client implements ReceiveListener {
 		}
 	}
 	
-	@NotNull
+	@Nullable
 	public String getUsername() {
 		return username;
 	}
 	
-	@NotNull
+	@Nullable
 	public String getPassword() {
 		return password;
 	}
@@ -284,23 +289,33 @@ public class Client implements ReceiveListener {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			if (result.result() > 0)
+				new Thread(() -> {
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException ignored) {
+					}
+					loginGui.destroy();
+				}).start();
 		}
 	}
 	
 	public void sendAuthentication() {
 		try {
-			connection.send(AuthenticationData.create(username, password));
+			if (password != null && username != null) {
+				connection.send(AuthenticationData.create(username, password));
+			}
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
 	}
 	
-	public void setUsername(String username) {
+	public void setUsername(@Nullable String username) {
 		this.username = username;
 	}
 	
-	public void setPassword(String password) {
+	public void setPassword(@Nullable String password) {
 		this.password = password;
 	}
 	

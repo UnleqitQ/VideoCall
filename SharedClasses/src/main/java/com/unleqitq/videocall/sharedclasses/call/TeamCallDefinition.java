@@ -20,8 +20,8 @@ public class TeamCallDefinition extends CallDefinition {
 	@NotNull
 	private final Set<UUID> denied = new HashSet<>();
 	
-	public TeamCallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator) {
-		super(managerHandler, uuid, creator);
+	public TeamCallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator, long time, String name) {
+		super(managerHandler, uuid, creator, time, name);
 	}
 	
 	@Override
@@ -85,7 +85,8 @@ public class TeamCallDefinition extends CallDefinition {
 	public static TeamCallDefinition load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
 		TeamCallDefinition callDefinition = new TeamCallDefinition(managerHandler,
 				UUID.fromString(section.get("uuid").getAsString()),
-				UUID.fromString(section.get("creator").getAsString()));
+				UUID.fromString(section.get("creator").getAsString()), section.get("time").getAsLong(),
+				section.get("name").getAsString());
 		for (JsonElement element : section.getAsJsonArray("members")) {
 			callDefinition.addMember(UUID.fromString(element.getAsString()));
 		}
@@ -119,6 +120,10 @@ public class TeamCallDefinition extends CallDefinition {
 		object.add("members", memberArray);
 		object.add("denied", deniedArray);
 		object.add("teams", teamArray);
+		object.add("time", new JsonPrimitive(getTime()));
+		object.add("name", new JsonPrimitive(getName()));
+		object.add("created", new JsonPrimitive(getCreated()));
+		object.add("changed", new JsonPrimitive(getChanged()));
 		return object;
 	}
 	
