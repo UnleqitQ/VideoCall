@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 
 public class LoginGui {
 	
@@ -28,12 +29,12 @@ public class LoginGui {
 	public void init() {
 		frame = new JFrame("Login");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setMinimumSize(new Dimension(260, 140));
+		frame.setMinimumSize(new Dimension(260, 180));
 		usernameField = new QTextField();
 		passwordField = new QPasswordField();
-		errorLabel = new JLabel();
+		errorLabel = new JLabel("    ");
 		errorLabel.setForeground(Color.RED);
-		errorLabel.setHorizontalAlignment(JLabel.EAST);
+		errorLabel.setHorizontalAlignment(JLabel.RIGHT);
 		okButton = new JButton("OK");
 		cancelButton = new JButton("Cancel");
 		okButton.setPreferredSize(new Dimension(50, 26));
@@ -45,21 +46,23 @@ public class LoginGui {
 		gbl.columnWeights = new double[3];
 		Arrays.fill(gbl.columnWeights, 1);
 		gbl.columnWeights[0] = 3;
-		gbl.rowWeights = new double[4];
-		Arrays.fill(gbl.rowWeights, 1);
-		gbl.rowWeights[3] = 5;
+		gbl.rowWeights = new double[6];
+		Arrays.fill(gbl.rowWeights, 0);
+		gbl.rowWeights[0] = 0.3;
+		gbl.rowWeights[4] = 1;
 		frame.setLayout(gbl);
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridwidth = 3;
-		gbc.gridy = 0;
-		frame.add(usernameField, gbc);
 		gbc.gridy = 1;
+		frame.add(usernameField, gbc);
+		gbc.gridy = 2;
 		frame.add(passwordField, gbc);
 		gbc.gridy = 3;
+		frame.add(errorLabel, gbc);
+		gbc.gridy = 5;
 		gbc.gridwidth = 1;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridx = 1;
 		frame.add(okButton, gbc);
 		gbc.gridx = 2;
@@ -75,6 +78,7 @@ public class LoginGui {
 		cancelButton.addActionListener(e -> System.exit(0));
 		okButton.addActionListener(e -> login());
 		usernameField.addActionListener(e -> login());
+		passwordField.addActionListener(e -> login());
 		
 	}
 	
@@ -84,14 +88,21 @@ public class LoginGui {
 		
 		Client.getInstance().sendAuthentication();
 		
-		AuthenticationResult result = resultQueue.poll();
+		AuthenticationResult result = null;
+		try {
+			result = resultQueue.poll(20, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			result = new AuthenticationResult(-3, null);
+		}
 		
 		if (result.result() > 0)
 			frame.dispose();
 		else
 			switch (result.result()) {
+				case -3 -> errorLabel.setText("Somehow got no response");
 				case -2 -> errorLabel.setText("User doesn't exist");
-				case -1 -> errorLabel.setText("Some weird error");
+				case -1 -> errorLabel.setText("Some weird server error");
 				case 0 -> errorLabel.setText("Password is wrong");
 			}
 	}

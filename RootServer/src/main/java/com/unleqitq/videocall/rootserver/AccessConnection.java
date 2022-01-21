@@ -43,7 +43,6 @@ public class AccessConnection implements ReceiveListener {
 			MachineInformation info = (MachineInformation) data.getData();
 			port = info.getPort();
 			freeMemory = info.getFreeMemory();
-			System.out.println("Info: " + info);
 		}
 	}
 	

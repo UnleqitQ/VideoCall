@@ -2,6 +2,7 @@ package com.unleqitq.videocall.client;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.unleqitq.videocall.client.gui.MainWindow;
 import com.unleqitq.videocall.client.gui.login.LoginGui;
 import com.unleqitq.videocall.client.managers.*;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
@@ -62,6 +63,7 @@ public class Client implements ReceiveListener {
 	public Thread refreshThread;
 	@NotNull
 	public Thread unknownRequestThread;
+	MainWindow window;
 	
 	public Client(@NotNull String host, int port) throws IOException {
 		instance = this;
@@ -128,6 +130,7 @@ public class Client implements ReceiveListener {
 	public void finishInit() {
 		refreshThread.start();
 		unknownRequestThread.start();
+		window = new MainWindow();
 	}
 	
 	@NotNull
@@ -253,7 +256,7 @@ public class Client implements ReceiveListener {
 	
 	@Override
 	public void onReceive(Data data) {
-		System.out.println(data.getData());
+		//System.out.println(data.getData());
 		if (data.getData() instanceof ListData) {
 			for (Serializable d0 : ((ListData) data.getData()).data()) {
 				if (d0 instanceof UserData) {
@@ -270,8 +273,10 @@ public class Client implements ReceiveListener {
 					CallDefinition call = ((CallData) d0).getCall(managerHandler);
 					managerHandler.getCallManager().addCall(call);
 					System.out.println(call);
+					window.callsPane.callsList.add(call.getUuid());
 				}
 			}
+			window.callsPane.callsList.updateList();
 		}
 		if (data.getData() instanceof AuthenticationResult result) {
 			switch (result.result()) {
@@ -286,13 +291,7 @@ public class Client implements ReceiveListener {
 				e.printStackTrace();
 			}
 			if (result.result() > 0)
-				new Thread(() -> {
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException ignored) {
-					}
-					//loginGui.destroy();
-				}).start();
+				finishInit();
 		}
 	}
 	

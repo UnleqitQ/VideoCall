@@ -5,6 +5,7 @@ import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.Server;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.account.Account;
+import com.unleqitq.videocall.sharedclasses.call.BasicCallDefinition;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
@@ -103,8 +104,13 @@ public class RootServer {
 		saveCalls();
 		saveTeams();
 		saveUsers();
+		BasicCallDefinition call = managerHandler.getCallManager().createBasicCall(
+				managerHandler.getUserManager().getUserMap().keySet().iterator().next(), 10, "test");
+		
+		call.addMember(managerHandler.getUserManager().getUserMap().keySet().iterator().next());
 		
 		System.out.println(managerHandler.getAccountManager().getAccount("root").save());
+		System.out.println(call);
 	}
 	
 	public void createUser(@NotNull String username, byte[] password, @NotNull String firstname, @NotNull String lastname) {

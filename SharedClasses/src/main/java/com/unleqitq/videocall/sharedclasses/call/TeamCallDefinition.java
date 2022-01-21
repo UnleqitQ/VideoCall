@@ -124,6 +124,7 @@ public class TeamCallDefinition extends CallDefinition {
 		object.add("name", new JsonPrimitive(getName()));
 		object.add("created", new JsonPrimitive(getCreated()));
 		object.add("changed", new JsonPrimitive(getChanged()));
+		object.add("type", new JsonPrimitive("team"));
 		return object;
 	}
 	
