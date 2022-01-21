@@ -7,9 +7,9 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import com.unleqitq.videocall.sharedclasses.call.AbstractCallManager;
 import com.unleqitq.videocall.sharedclasses.call.BasicCallDefinition;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
-import com.unleqitq.videocall.sharedclasses.call.AbstractCallManager;
 import com.unleqitq.videocall.sharedclasses.call.TeamCallDefinition;
 import org.apache.commons.collections4.MapUtils;
 import org.jetbrains.annotations.NotNull;
@@ -54,23 +54,23 @@ public class CallManager extends AbstractCallManager {
 	}
 	
 	@NotNull
-	public TeamCallDefinition createTeamCall(@NotNull UUID creator) {
+	public TeamCallDefinition createTeamCall(@NotNull UUID creator, long time, @NotNull String name) {
 		UUID callId;
 		do {
 			callId = UUID.randomUUID();
 		} while (getCallMap().containsKey(callId));
-		TeamCallDefinition call = new TeamCallDefinition(managerHandler, callId, creator);
+		TeamCallDefinition call = new TeamCallDefinition(managerHandler, callId, creator, time, name);
 		getCallMap().put(callId, call);
 		return call;
 	}
 	
 	@NotNull
-	public BasicCallDefinition createBasicCall(@NotNull UUID creator) {
+	public BasicCallDefinition createBasicCall(@NotNull UUID creator, long time, @NotNull String name) {
 		UUID callId;
 		do {
 			callId = UUID.randomUUID();
 		} while (getCallMap().containsKey(callId));
-		BasicCallDefinition call = new BasicCallDefinition(managerHandler, callId, creator);
+		BasicCallDefinition call = new BasicCallDefinition(managerHandler, callId, creator, time, name);
 		getCallMap().put(callId, call);
 		return call;
 	}

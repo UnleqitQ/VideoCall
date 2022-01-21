@@ -275,14 +275,10 @@ public class Client implements ReceiveListener {
 		}
 		if (data.getData() instanceof AuthenticationResult result) {
 			switch (result.result()) {
-				case -2:
-					System.out.println("User doesn't exist");
-				case -1:
-					System.out.println("Some weird error");
-				case 0:
-					System.out.println("Password is wrong");
-				case 1:
-					userUuid = result.userUuid();
+				case -2 -> System.out.println("User doesn't exist");
+				case -1 -> System.out.println("Some weird error");
+				case 0 -> System.out.println("Password is wrong");
+				case 1 -> userUuid = result.userUuid();
 			}
 			try {
 				loginGui.resultQueue.put(result);
@@ -295,7 +291,7 @@ public class Client implements ReceiveListener {
 						Thread.sleep(500);
 					} catch (InterruptedException ignored) {
 					}
-					loginGui.destroy();
+					//loginGui.destroy();
 				}).start();
 		}
 	}

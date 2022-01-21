@@ -58,6 +58,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>com.unleqitq.videocall</groupId>
+            <artifactId>SwingUtils</artifactId>
+            <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>com.dlsc.flexgantt</groupId>
             <artifactId>view</artifactId>
             <version>8.0.0</version>

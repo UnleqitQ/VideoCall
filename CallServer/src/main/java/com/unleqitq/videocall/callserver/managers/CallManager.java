@@ -54,23 +54,23 @@ public class CallManager extends AbstractCallManager {
 	}
 	
 	@NotNull
-	public TeamCallDefinition createTeamCall(@NotNull UUID creator) {
+	public TeamCallDefinition createTeamCall(@NotNull UUID creator, long time, @NotNull String name) {
 		UUID callId;
 		do {
 			callId = UUID.randomUUID();
 		} while (getCallMap().containsKey(callId));
-		TeamCallDefinition call = new TeamCallDefinition(managerHandler, callId, creator);
+		TeamCallDefinition call = new TeamCallDefinition(managerHandler, callId, creator, time, name);
 		getCallMap().put(callId, call);
 		return call;
 	}
 	
 	@NotNull
-	public BasicCallDefinition createBasicCall(@NotNull UUID creator) {
+	public BasicCallDefinition createBasicCall(@NotNull UUID creator, long time, @NotNull String name) {
 		UUID callId;
 		do {
 			callId = UUID.randomUUID();
 		} while (getCallMap().containsKey(callId));
-		BasicCallDefinition call = new BasicCallDefinition(managerHandler, callId, creator);
+		BasicCallDefinition call = new BasicCallDefinition(managerHandler, callId, creator, time, name);
 		getCallMap().put(callId, call);
 		return call;
 	}
