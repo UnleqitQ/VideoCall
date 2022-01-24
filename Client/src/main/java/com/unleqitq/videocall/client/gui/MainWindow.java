@@ -34,24 +34,27 @@ public class MainWindow {
 		teamsPane.init();
 		
 		frame.setVisible(true);
-		updateThread = new Thread(this::updateLoop);
-		updateThread.setDaemon(true);
+		updateThread = new Thread(Client.threadGroup, this::updateLoop);
+		//updateThread.setDaemon(true);
 		updateThread.start();
 	}
 	
 	public void updateLoop() {
-		while (true) {
+		while (!Thread.currentThread().isInterrupted()) {
 			update();
 			try {
-				Thread.sleep(100);
+				Thread.sleep(Client.Config.guiUpdateSpeed);
 			} catch (InterruptedException ignored) {
+				return;
 			}
 		}
 	}
 	
 	public void update() {
-		callsPane.update();
-		
+		if (tabbedPane.getSelectedComponent() == callsPane.pane)
+			callsPane.update();
+		if (tabbedPane.getSelectedComponent() == teamsPane.pane)
+			teamsPane.update();
 	}
 	
 }

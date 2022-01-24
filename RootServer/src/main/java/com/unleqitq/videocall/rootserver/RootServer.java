@@ -105,16 +105,21 @@ public class RootServer {
 		saveTeams();
 		saveUsers();
 		BasicCallDefinition call = managerHandler.getCallManager().createBasicCall(
-				managerHandler.getUserManager().getUserMap().keySet().iterator().next(), 10, "test");
+				managerHandler.getUserManager().getUserMap().keySet().iterator().next(), System.currentTimeMillis(),
+				"test");
 		
 		call.addMember(managerHandler.getUserManager().getUserMap().keySet().iterator().next());
 		
+		Team team = managerHandler.getTeamManager().createTeam(
+				managerHandler.getUserManager().getUserMap().keySet().iterator().next(), "Test 0");
+		
 		System.out.println(managerHandler.getAccountManager().getAccount("root").save());
 		System.out.println(call);
+		System.out.println(team);
 	}
 	
 	public void createUser(@NotNull String username, byte[] password, @NotNull String firstname, @NotNull String lastname) {
-		Account account = managerHandler.getAccountManager().createAccount("root", password);
+		Account account = managerHandler.getAccountManager().createAccount(username, password);
 		if (account == null)
 			return;
 		managerHandler.getUserManager().createUser(account.getUuid(), firstname, lastname, username);

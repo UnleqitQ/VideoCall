@@ -33,6 +33,10 @@ public abstract class AbstractNetworkConnection {
 		receiveThread = new Thread(this::loopReceive);
 	}
 	
+	public boolean isConnected() {
+		return connected;
+	}
+	
 	public void init() throws IOException {
 		onCreate();
 		receiveThread.start();
@@ -63,6 +67,9 @@ public abstract class AbstractNetworkConnection {
 	}
 	
 	public void send(Serializable data) {
+		if (!connected) {
+			return;
+		}
 		if (data instanceof SendData) {
 			sendEnqueue(new MessageData(this, (SendData) data));
 		}
@@ -82,6 +89,9 @@ public abstract class AbstractNetworkConnection {
 	protected void write(SendData data) {
 		try {
 			objectOutputStream.writeUnshared(data);
+		} catch (SocketException ignored) {
+			System.out.println("Connection reset " + socket.getInetAddress());
+			connected = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -119,10 +129,10 @@ public abstract class AbstractNetworkConnection {
 			else if (sendData instanceof ConfirmationData) {
 				onConfirmation();
 			}
-		} catch (SocketException | EOFException e) {
+		} catch (SocketException | EOFException | StreamCorruptedException | OptionalDataException | ClassCastException e) {
 			System.out.println("Connection is reset");
 			connected = false;
-		} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | ClassNotFoundException | ClassCastException e) {
+		} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}

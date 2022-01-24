@@ -5,6 +5,9 @@ import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -55,6 +58,18 @@ public abstract class CallDefinition {
 	
 	public long getTime() {
 		return time;
+	}
+	
+	public LocalDateTime getChangedLDT() {
+		return LocalDateTime.ofInstant(Instant.ofEpochMilli(changed), ZoneId.systemDefault());
+	}
+	
+	public LocalDateTime getCreatedLDT() {
+		return LocalDateTime.ofInstant(Instant.ofEpochMilli(created), ZoneId.systemDefault());
+	}
+	
+	public LocalDateTime getTimeLDT() {
+		return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault());
 	}
 	
 	public void setCreatorId(@NotNull UUID creator) {
@@ -113,6 +128,7 @@ public abstract class CallDefinition {
 			default -> null;
 		};
 		callDefinition.changed = section.get("changed").getAsLong();
+		callDefinition.time = section.get("time").getAsLong();
 		callDefinition.created = section.get("created").getAsLong();
 		return callDefinition;
 	}

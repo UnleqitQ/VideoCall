@@ -171,7 +171,7 @@ public class AccessServer implements ReceiveListener {
 	
 	public void addClient(BaseConnection baseConnection) {
 		baseConnections.remove(baseConnection);
-		clientConnections.add(new ClientConnection(baseConnection.connection, this));
+		clientConnections.add(new ClientConnection(baseConnection.connection));
 	}
 	
 	@NotNull

@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.UUID;
 
 public class ClientLauncher implements ReceiveListener {
 	
@@ -19,14 +18,9 @@ public class ClientLauncher implements ReceiveListener {
 	YAMLConfiguration configuration = new YAMLConfiguration();
 	ClientNetworkConnection connection;
 	
-	private UUID userUuid;
-	@NotNull
-	private UnknownValues unknownValues;
-	
 	public ClientLauncher() throws IOException {
 		loadConfig();
 		
-		unknownValues = new UnknownValues();
 		
 		ClientNetworkConnection.maxTimeDifference = configuration.getInt("network.maxTimeDifference", 4) * 1000;
 		String host = configuration.getString("network.server.root.host", "localhost");
@@ -38,7 +32,7 @@ public class ClientLauncher implements ReceiveListener {
 		connection.init();
 		
 		try {
-			Thread.sleep(1000 * 4);
+			Thread.sleep(1000 * 1);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -55,12 +49,14 @@ public class ClientLauncher implements ReceiveListener {
 				configuration.read(fis);
 			} catch (FileNotFoundException | ConfigurationException e) {
 				e.printStackTrace();
+				Client.errorG(e);
 			} finally {
 				if (fis != null)
 					try {
 						fis.close();
 					} catch (IOException e) {
 						e.printStackTrace();
+						Client.errorG(e);
 					}
 			}
 		}
@@ -76,26 +72,34 @@ public class ClientLauncher implements ReceiveListener {
 				configuration.write(writer);
 			} catch (ConfigurationException | IOException e) {
 				e.printStackTrace();
+				Client.errorG(e);
 			} finally {
 				if (is != null)
 					try {
 						is.close();
 					} catch (IOException e) {
 						e.printStackTrace();
+						Client.errorG(e);
 					}
 				if (writer != null)
 					try {
 						writer.close();
 					} catch (IOException e) {
 						e.printStackTrace();
+						Client.errorG(e);
 					}
 			}
 		}
 	}
 	
 	
-	public static void main(String @NotNull [] args) throws IOException {
-		ClientLauncher client = new ClientLauncher();
+	public static void main(String @NotNull [] args) {
+		try {
+			new ClientLauncher();
+		} catch (IOException e) {
+			e.printStackTrace();
+			Client.stopGAndSend(e);
+		}
 	}
 	
 	@Override
@@ -107,16 +111,19 @@ public class ClientLauncher implements ReceiveListener {
 					connection.getInputStream().close();
 				} catch (IOException e) {
 					e.printStackTrace();
+					Client.stopG(e);
 				}
 				try {
 					connection.getOutputStream().close();
 				} catch (IOException e) {
 					e.printStackTrace();
+					Client.stopG(e);
 				}
 				try {
 					connection.getSocket().close();
 				} catch (IOException e) {
 					e.printStackTrace();
+					Client.stopG(e);
 				}
 				try {
 					Thread.sleep(1000);
@@ -126,9 +133,10 @@ public class ClientLauncher implements ReceiveListener {
 				connection.getReceiveThread().interrupt();
 				
 				try {
-					Client client = new Client(info.host(), info.port());
+					new Client(info.host(), info.port());
 				} catch (IOException e) {
 					e.printStackTrace();
+					Client.stopGAndSend(e);
 				}
 			});
 			thread0.start();

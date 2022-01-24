@@ -41,6 +41,7 @@ public class BasicCallDefinition extends CallDefinition {
 	
 	@Override
 	public boolean testMember(@NotNull UUID user) {
+		if (user.equals(getCreator())) return true;
 		if (denied.contains(user))
 			return false;
 		if (members.contains(user))
@@ -54,6 +55,7 @@ public class BasicCallDefinition extends CallDefinition {
 		Set<UUID> result = new HashSet<>();
 		result.addAll(members);
 		result.removeAll(denied);
+		result.add(getCreator());
 		return result;
 	}
 	

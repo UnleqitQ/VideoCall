@@ -1,7 +1,8 @@
-package com.unleqitq.videocall.client.gui.calls;
+package com.unleqitq.videocall.client.gui.teams.list;
 
 import com.github.weisj.darklaf.listener.MouseClickListener;
 import com.unleqitq.videocall.client.Client;
+import com.unleqitq.videocall.client.gui.editor.team.TeamEditor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -10,42 +11,41 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.*;
 
-public class CallsList implements MouseClickListener {
+public class TeamsList implements MouseClickListener {
 	
+	public JPanel root = new JPanel();
 	JScrollPane scrollPane = new JScrollPane();
 	JPanel panel = new JPanel();
-	UUID selected = null;
-	Set<UUID> callSet = new HashSet<>();
-	Map<UUID, CallListPanel> callPanelMap = new HashMap<>();
+	JButton createButton = new JButton("Create");
+	public UUID selected = null;
+	Set<UUID> teamSet = new HashSet<>();
+	Map<UUID, TeamListPanel> teamPanelMap = new HashMap<>();
 	
-	public CallsList() {
+	public TeamsList() {
+		root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+		root.add(createButton);
+		createButton.addActionListener((event) -> new TeamEditor());
+		root.add(scrollPane);
 		scrollPane.setViewportView(panel);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.addMouseListener(this);
 	}
 	
 	@NotNull
-	public CallListPanel getCallPanel(@NotNull UUID uuid) {
-		if (!callPanelMap.containsKey(uuid))
-			callPanelMap.put(uuid, new CallListPanel(uuid, this));
-		return callPanelMap.get(uuid);
+	public TeamListPanel getCallPanel(@NotNull UUID uuid) {
+		if (!teamPanelMap.containsKey(uuid))
+			teamPanelMap.put(uuid, new TeamListPanel(uuid, this));
+		return teamPanelMap.get(uuid);
 	}
 	
 	public void remove(UUID uuid) {
-		callSet.remove(uuid);
-		callPanelMap.remove(uuid);
+		teamSet.remove(uuid);
+		teamPanelMap.remove(uuid);
 	}
 	
 	public void updateList() {
-		List<UUID> l = new ArrayList<>(callSet);
-		l.sort(new Comparator<UUID>() {
-			
-			@Override
-			public int compare(UUID o1, UUID o2) {
-				return (int) (Client.getInstance().callCache.asMap().get(
-						o1).getTime() - Client.getInstance().callCache.asMap().get(o2).getTime());
-			}
-		});
+		List<UUID> l = new ArrayList<>(teamSet);
+		l.sort(Comparator.comparing(o -> Client.getInstance().teamCache.asMap().get(o).getName()));
 		
 		panel.removeAll();
 		
@@ -55,18 +55,18 @@ public class CallsList implements MouseClickListener {
 	}
 	
 	public void add(UUID uuid) {
-		callSet.add(uuid);
+		teamSet.add(uuid);
 	}
 	
 	public void updatePanels() {
 		Point pos = MouseInfo.getPointerInfo().getLocation();
-		for (CallListPanel p : callPanelMap.values()) {
+		for (TeamListPanel p : teamPanelMap.values()) {
 			boolean hovering = false;
 			try {
 				hovering = new Rectangle(p.panel.getLocationOnScreen(), p.panel.getSize()).contains(pos);
 			} catch (Exception ignored) {
 			}
-			p.update(p.callUuid.equals(selected), hovering);
+			p.update(p.teamUuid.equals(selected), hovering);
 		}
 	}
 	

@@ -12,6 +12,7 @@ import com.unleqitq.videocall.transferclasses.base.data.CallData;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 import com.unleqitq.videocall.transferclasses.base.data.UserData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
@@ -22,12 +23,12 @@ import java.util.UUID;
 public class ClientConnection implements ReceiveListener {
 	
 	public ServerNetworkConnection connection;
-	AccessServer rootServer;
+	@Nullable
+	public UUID user;
 	
-	public ClientConnection(@NotNull ServerNetworkConnection connection, AccessServer rootServer) {
+	public ClientConnection(@NotNull ServerNetworkConnection connection) {
 		this.connection = connection;
 		connection.setListener(this);
-		this.rootServer = rootServer;
 		
 		System.out.println("Established Client Connection: " + connection.getSocket());
 		
@@ -35,15 +36,15 @@ public class ClientConnection implements ReceiveListener {
 	
 	@Override
 	public void onReceive(Data data) {
-		if (data.getData() instanceof ClientListRequest request) {
+		if (data.getData() instanceof ClientListRequest && user != null) {
 			Set<Serializable> set = new HashSet<>();
-			for (Team team : rootServer.getManagerHandler().getTeamManager().getTeamMap().values()) {
-				if (team.getMembers().contains(request.user())) {
+			for (Team team : AccessServer.getInstance().getManagerHandler().getTeamManager().getTeamMap().values()) {
+				if (team.getMembers().contains(user)) {
 					set.add(new TeamData(team));
 				}
 			}
-			for (CallDefinition call : rootServer.getManagerHandler().getCallManager().getCallMap().values()) {
-				if (call.testMember(request.user())) {
+			for (CallDefinition call : AccessServer.getInstance().getManagerHandler().getCallManager().getCallMap().values()) {
+				if (call.testMember(user)) {
 					set.add(new CallData(call));
 				}
 			}
@@ -58,21 +59,21 @@ public class ClientConnection implements ReceiveListener {
 			Set<Serializable> set = new HashSet<>();
 			for (Serializable v : request.users()) {
 				UUID uuid = (UUID) v;
-				User user = rootServer.getManagerHandler().getUserManager().getUser(uuid);
+				User user = AccessServer.getInstance().getManagerHandler().getUserManager().getUser(uuid);
 				if (user != null) {
 					set.add(new UserData(user));
 				}
 			}
 			for (Serializable v : request.calls()) {
 				UUID uuid = (UUID) v;
-				CallDefinition call = rootServer.getManagerHandler().getCallManager().getCall(uuid);
+				CallDefinition call = AccessServer.getInstance().getManagerHandler().getCallManager().getCall(uuid);
 				if (call != null) {
 					set.add(new CallData(call));
 				}
 			}
 			for (Serializable v : request.teams()) {
 				UUID uuid = (UUID) v;
-				Team team = rootServer.getManagerHandler().getTeamManager().getTeam(uuid);
+				Team team = AccessServer.getInstance().getManagerHandler().getTeamManager().getTeam(uuid);
 				if (team != null) {
 					set.add(new TeamData(team));
 				}
@@ -84,17 +85,23 @@ public class ClientConnection implements ReceiveListener {
 			}
 			connection.send(new ListData(array));
 		}
+		if (data.getData() instanceof TeamData teamData) {
+			System.out.println(teamData);
+			AccessServer.getInstance().rootConnection.send(teamData);
+		}
 		if (data.getData() instanceof AuthenticationData authenticationData) {
 			try {
-				Account account = rootServer.getManagerHandler().getAccountManager().getAccount(
+				Account account = AccessServer.getInstance().getManagerHandler().getAccountManager().getAccount(
 						authenticationData.username());
 				if (account == null) {
 					connection.send(new AuthenticationResult(-2, null));
 					return;
 				}
 				boolean flag = account.test(authenticationData.passphrase(), authenticationData.time());
-				if (flag)
+				if (flag) {
 					connection.send(new AuthenticationResult(1, account.getUuid()));
+					user = account.getUuid();
+				}
 				else
 					connection.send(new AuthenticationResult(0, null));
 			} catch (NullPointerException e) {

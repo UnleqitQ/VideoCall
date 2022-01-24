@@ -18,7 +18,6 @@ public class Team {
 	@NotNull
 	private IManagerHandler managerHandler;
 	
-	@NotNull
 	private final UUID uuid;
 	
 	@NotNull
@@ -28,7 +27,7 @@ public class Team {
 	@NotNull
 	private String name;
 	
-	public Team(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator, @NotNull String name) {
+	public Team(@NotNull IManagerHandler managerHandler, UUID uuid, @NotNull UUID creator, @NotNull String name) {
 		this.managerHandler = managerHandler;
 		this.uuid = uuid;
 		this.creator = creator;
@@ -60,14 +59,15 @@ public class Team {
 		members.remove(user);
 	}
 	
-	@NotNull
 	public UUID getUuid() {
 		return uuid;
 	}
 	
 	@NotNull
 	public Set<UUID> getMembers() {
-		return members;
+		Set<UUID> members0 = new HashSet<>(members);
+		members0.add(creator);
+		return members0;
 	}
 	
 	@Override
@@ -97,7 +97,9 @@ public class Team {
 	@NotNull
 	public JsonObject save() {
 		JsonObject object = new JsonObject();
-		object.add("uuid", new JsonPrimitive(getUuid().toString()));
+		if (getUuid() != null)
+			object.add("uuid", new JsonPrimitive(getUuid().toString()));
+		object.add("name", new JsonPrimitive(getName()));
 		object.add("creator", new JsonPrimitive(getCreator().toString()));
 		JsonArray memberArray = new JsonArray(members.size());
 		for (UUID user : members) {

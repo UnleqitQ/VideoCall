@@ -1,5 +1,6 @@
 package com.unleqitq.videocall.sharedclasses;
 
+import com.unleqitq.videocall.transferclasses.initialize.SendData;
 import com.unleqitq.videocall.transferclasses.initialize.crypt.AESKeyData;
 import com.unleqitq.videocall.transferclasses.initialize.crypt.RSAKeyData;
 
@@ -9,13 +10,17 @@ import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ClientNetworkConnection extends AbstractNetworkConnection {
 	
+	private Thread sendThread;
+	private ConcurrentLinkedQueue<SendData> sendQueue = new ConcurrentLinkedQueue<>();
 	
 	public ClientNetworkConnection(Socket socket) throws IOException {
 		super(socket);
@@ -23,11 +28,20 @@ public class ClientNetworkConnection extends AbstractNetworkConnection {
 		inputStream = socket.getInputStream();
 		objectOutputStream = new ObjectOutputStream(outputStream);
 		objectInputStream = new ObjectInputStream(inputStream);
+		sendThread = new Thread(this::loopSend);
+		sendThread.start();
+	}
+	
+	@Override
+	public void send(Serializable data) {
+		if (!isConnected())
+			throw new IllegalStateException("Not Connected");
+		super.send(data);
 	}
 	
 	@Override
 	protected void sendEnqueue(MessageData messageData) {
-		write(messageData.data);
+		sendQueue.add(messageData.data);
 	}
 	
 	@Override
@@ -56,6 +70,23 @@ public class ClientNetworkConnection extends AbstractNetworkConnection {
 	public void onConfirmation() {
 		ready = true;
 		System.out.println("Connection ready");
+	}
+	
+	public void loopSend() {
+		while (true) {
+			while (!sendQueue.isEmpty()) {
+				try {
+					SendData data = sendQueue.poll();
+					write(data);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException ignored) {
+			}
+		}
 	}
 	
 }

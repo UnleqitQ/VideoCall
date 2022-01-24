@@ -1,5 +1,7 @@
 package com.unleqitq.videocall.rootserver;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.account.Account;
@@ -18,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 
 public class AccessConnection implements ReceiveListener {
 	
@@ -43,6 +46,26 @@ public class AccessConnection implements ReceiveListener {
 			MachineInformation info = (MachineInformation) data.getData();
 			port = info.getPort();
 			freeMemory = info.getFreeMemory();
+		}
+		if (data.getData() instanceof TeamData teamData) {
+			System.out.println(teamData);
+			if (teamData.getUUID() != null) {
+				Team team = teamData.getTeam(rootServer.getManagerHandler());
+				rootServer.getManagerHandler().getTeamManager().addTeam(team);
+				for (AccessConnection connection : rootServer.accessQueue) {
+					connection.connection.send(new TeamData(team));
+				}
+			}
+			else {
+				UUID uuid = rootServer.getManagerHandler().getTeamManager().getTeamUuid();
+				JsonObject object = teamData.getJsonObject();
+				object.add("uuid", new JsonPrimitive(uuid.toString()));
+				Team team = Team.load(rootServer.getManagerHandler(), object);
+				rootServer.getManagerHandler().getTeamManager().addTeam(team);
+				for (AccessConnection connection : rootServer.accessQueue) {
+					connection.connection.send(new TeamData(team));
+				}
+			}
 		}
 	}
 	

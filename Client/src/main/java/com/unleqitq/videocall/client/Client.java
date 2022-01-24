@@ -21,7 +21,10 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
@@ -34,8 +37,10 @@ public class Client implements ReceiveListener {
 	@NotNull
 	private static Client instance;
 	
+	private boolean stopping;
+	
 	YAMLConfiguration configuration = new YAMLConfiguration();
-	ClientNetworkConnection connection;
+	public ClientNetworkConnection connection;
 	
 	@NotNull
 	private final LoginGui loginGui = new LoginGui();
@@ -44,7 +49,7 @@ public class Client implements ReceiveListener {
 	private String username;
 	@Nullable
 	private String password;
-	private UUID userUuid;
+	public UUID userUuid;
 	
 	@NotNull
 	public Cache<UUID, User> userCache;
@@ -65,12 +70,17 @@ public class Client implements ReceiveListener {
 	public Thread unknownRequestThread;
 	MainWindow window;
 	
+	@NotNull
+	public static ThreadGroup threadGroup = new ThreadGroup("Client");
+	
+	public LookAndFeel laf;
+	
 	public Client(@NotNull String host, int port) throws IOException {
 		instance = this;
 		
 		loadConfig();
-		refreshThread = new Thread(this::refreshLoop);
-		unknownRequestThread = new Thread(this::unknownRequestLoop);
+		refreshThread = new Thread(threadGroup, this::refreshLoop);
+		unknownRequestThread = new Thread(threadGroup, this::unknownRequestLoop);
 		
 		managerHandler = new ManagerHandler();
 		managerHandler.setCallManager(new CallManager(managerHandler)).setTeamManager(
@@ -78,6 +88,7 @@ public class Client implements ReceiveListener {
 				new AccountManager(managerHandler)).setConfiguration(configuration);
 		
 		Config.cacheDuration = clamp(configuration.getInt("cacheDuration", 120), 20, 300);
+		Config.guiUpdateSpeed = clamp(configuration.getInt("guiUpdateSpeed", 100), 4, 500);
 		Config.unknownValuesRequestInterval = clamp(configuration.getInt("unknownValuesRequestInterval", 1000), 100,
 				3000);
 		Config.videoMaxTimeDifference = clamp(configuration.getInt("video.maxTimeDifference", 120), 20, 300);
@@ -105,21 +116,31 @@ public class Client implements ReceiveListener {
 		this.host = host;
 		this.port = port;
 		
-		Socket socket = new Socket(host, port);
+		Socket socket;
+		try {
+			socket = new Socket(host, port);
+		} catch (ConnectException e) {
+			stop(e);
+			return;
+		}
 		connection = new ClientNetworkConnection(socket);
 		connection.setListener(this);
 		connection.init();
 		
 		try {
-			Thread.sleep(1000 * 2);
+			Thread.sleep(1000 * 1);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		
-		connection.send(new ConnectionInformation(ConnectionInformation.ClientType.CLIENT));
+		try {
+			connection.send(new ConnectionInformation(ConnectionInformation.ClientType.CLIENT));
+		} catch (IllegalStateException e) {
+			stop(e);
+		}
 		
 		try {
-			Thread.sleep(1000 * 2);
+			Thread.sleep(1000 * 1);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -163,11 +184,12 @@ public class Client implements ReceiveListener {
 	}
 	
 	private void unknownRequestLoop() {
-		while (true) {
+		while (!Thread.currentThread().isInterrupted()) {
 			sendUnknownRequest();
 			try {
 				Thread.sleep(Config.unknownValuesRequestInterval);
 			} catch (InterruptedException ignored) {
+				return;
 			}
 		}
 	}
@@ -179,21 +201,30 @@ public class Client implements ReceiveListener {
 		unknownValues.teams.clear();
 		Set<UUID> calls = new HashSet<>(unknownValues.calls);
 		unknownValues.calls.clear();
-		connection.send(PackRequest.create(users, calls, teams));
+		try {
+			connection.send(PackRequest.create(users, calls, teams));
+		} catch (IllegalStateException e) {
+			stop(e);
+		}
 	}
 	
 	private void refreshLoop() {
-		while (true) {
+		while (!Thread.currentThread().isInterrupted()) {
 			sendRefreshRequest();
 			try {
 				Thread.sleep(Config.refreshInterval * 1000L);
 			} catch (InterruptedException ignored) {
+				return;
 			}
 		}
 	}
 	
 	private void sendRefreshRequest() {
-		connection.send(new ClientListRequest(userUuid));
+		try {
+			connection.send(new ClientListRequest());
+		} catch (IllegalStateException e) {
+			stop(e);
+		}
 	}
 	
 	private void loadConfig() {
@@ -262,21 +293,28 @@ public class Client implements ReceiveListener {
 				if (d0 instanceof UserData) {
 					User user = ((UserData) d0).getUser(managerHandler);
 					managerHandler.getUserManager().addUser(user);
+					unknownValues.users.remove(user.getUuid());
 					System.out.println(user);
 				}
 				if (d0 instanceof TeamData) {
 					Team team = ((TeamData) d0).getTeam(managerHandler);
 					managerHandler.getTeamManager().addTeam(team);
+					window.teamsPane.teamsList.add(team.getUuid());
+					unknownValues.teams.remove(team.getUuid());
 					System.out.println(team);
 				}
 				if (d0 instanceof CallData) {
 					CallDefinition call = ((CallData) d0).getCall(managerHandler);
 					managerHandler.getCallManager().addCall(call);
-					System.out.println(call);
 					window.callsPane.callsList.add(call.getUuid());
+					unknownValues.calls.remove(call.getUuid());
+					System.out.println(call);
 				}
 			}
 			window.callsPane.callsList.updateList();
+			window.callsPane.callsList.updatePanels();
+			window.teamsPane.teamsList.updateList();
+			window.teamsPane.teamsList.updatePanels();
 		}
 		if (data.getData() instanceof AuthenticationResult result) {
 			switch (result.result()) {
@@ -298,12 +336,132 @@ public class Client implements ReceiveListener {
 	public void sendAuthentication() {
 		try {
 			if (password != null && username != null) {
-				connection.send(AuthenticationData.create(username, password));
+				try {
+					connection.send(AuthenticationData.create(username, password));
+				} catch (IllegalStateException e) {
+					stop(e);
+				}
 			}
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
+	}
+	
+	public synchronized void stop(Exception e) {
+		if (stopping)
+			return;
+		stopping = true;
+		new Thread(() -> new Thread(() -> {
+			Thread[] threads = new Thread[threadGroup.activeCount() + 2];
+			threadGroup.enumerate(threads);
+			for (Thread thread : threads) {
+				try {
+					thread.interrupt();
+				} catch (SecurityException | NullPointerException ignored) {
+				}
+			}
+			if (window != null)
+				window.frame.dispose();
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String s = e.getMessage() + "\n\n" + sw + "\n\nRerun?";
+			int response = errorDialog(s, "Houston, we have a problem", JOptionPane.OK_CANCEL_OPTION);
+			if (response == JOptionPane.CLOSED_OPTION || response == JOptionPane.CANCEL_OPTION)
+				System.exit(0);
+			else {
+				try {
+					new Client(host, port);
+				} catch (IOException ex) {
+					ex.printStackTrace();
+					System.exit(0);
+				}
+			}
+		}).start()).start();
+	}
+	
+	private static boolean stoppingG = false;
+	
+	public static synchronized void stopG(Exception e) {
+		if (stoppingG)
+			return;
+		stoppingG = true;
+		new Thread(() -> new Thread(() -> {
+			Thread[] threads = new Thread[threadGroup.activeCount() + 2];
+			threadGroup.enumerate(threads);
+			for (Thread thread : threads) {
+				try {
+					thread.interrupt();
+				} catch (SecurityException | NullPointerException ignored) {
+				}
+			}
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String s = e.getMessage() + "\n\n" + sw;
+			errorDialog(s, "Houston, we have a problem", JOptionPane.DEFAULT_OPTION);
+			System.exit(0);
+		}).start()).start();
+	}
+	
+	public static synchronized void stopGAndSend(Exception e) {
+		if (stoppingG)
+			return;
+		stoppingG = true;
+		new Thread(() -> new Thread(() -> {
+			Thread[] threads = new Thread[threadGroup.activeCount() + 2];
+			threadGroup.enumerate(threads);
+			for (Thread thread : threads) {
+				try {
+					thread.interrupt();
+				} catch (SecurityException | NullPointerException ignored) {
+				}
+			}
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String s = e.getMessage() + "\n\n" + sw + "\n\nSend Report?";
+			int r = errorDialog(s, "Houston, we have a problem", JOptionPane.OK_CANCEL_OPTION);
+			if (r == JOptionPane.OK_OPTION) {
+				sendReport(e);
+			}
+			System.exit(0);
+		}).start()).start();
+	}
+	
+	public static void errorG(Exception e) {
+		new Thread(() -> new Thread(() -> {
+			Thread[] threads = new Thread[threadGroup.activeCount() + 2];
+			threadGroup.enumerate(threads);
+			for (Thread thread : threads) {
+				try {
+					thread.interrupt();
+				} catch (SecurityException | NullPointerException ignored) {
+				}
+			}
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String s = e.getMessage() + "\n\n" + sw;
+			errorDialog(s, "Houston, we have a problem", JOptionPane.DEFAULT_OPTION);
+		}).start()).start();
+	}
+	
+	public static void errorGAndSend(Exception e) {
+		new Thread(() -> new Thread(() -> {
+			Thread[] threads = new Thread[threadGroup.activeCount() + 2];
+			threadGroup.enumerate(threads);
+			for (Thread thread : threads) {
+				try {
+					thread.interrupt();
+				} catch (SecurityException | NullPointerException ignored) {
+				}
+			}
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String s = e.getMessage() + "\n\n" + sw + "\n\nSend Report?";
+			int r = errorDialog(s, "Houston, we have a problem", JOptionPane.OK_CANCEL_OPTION);
+			if (r == JOptionPane.OK_OPTION) {
+				sendReport(e);
+			}
+		}).start()).start();
 	}
 	
 	public void setUsername(@Nullable String username) {
@@ -322,6 +480,7 @@ public class Client implements ReceiveListener {
 		public static int videoMaxTimeDifference;
 		public static float audioDuration;
 		public static int cacheDuration;
+		public static int guiUpdateSpeed;
 		public static int refreshInterval;
 		public static int unknownValuesRequestInterval;
 		
@@ -345,6 +504,61 @@ public class Client implements ReceiveListener {
 		if (v < min)
 			return min;
 		return v;
+	}
+	
+	@SuppressWarnings ({"deprecation", "UnnecessaryUnboxing", "RedundantSuppression"})
+	public static int errorDialog(Object message, String title, int optionType) throws HeadlessException {
+		int messageType = JOptionPane.ERROR_MESSAGE;
+		int response = JOptionPane.showOptionDialog(null, message, title, optionType, messageType, null, null, null);
+		return response;
+		/*JOptionPane pane = new JOptionPane(message, messageType, optionType, icon, options, initialValue);
+		pane.setInitialValue(initialValue);
+		pane.setComponentOrientation(
+				((parentComponent == null) ? JOptionPane.getRootFrame() : parentComponent).getComponentOrientation());
+		
+		int style = 0;
+		try {
+			style = new ReflectionClassSession(JOptionPane.class).getMethod("styleFromMessageType").invoke(null,
+					messageType).hashCode();
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		JDialog dialog;
+		try {
+			dialog = (JDialog) new ReflectionSession(pane).getMethod("createDialog").invoke(pane, parentComponent,
+					title, style);
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			e.printStackTrace();
+			return JOptionPane.CLOSED_OPTION;
+		}
+		
+		pane.selectInitialValue();
+		dialog.show();
+		dialog.dispose();
+		
+		Object selectedValue = pane.getValue();
+		
+		if (selectedValue == null)
+			return JOptionPane.CLOSED_OPTION;
+		if (options == null) {
+			if (selectedValue instanceof Integer)
+				return ((Integer) selectedValue).intValue();
+			return JOptionPane.CLOSED_OPTION;
+		}
+		for (int counter = 0, maxCounter = options.length; counter < maxCounter; counter++) {
+			if (options[counter].equals(selectedValue))
+				return counter;
+		}
+		return JOptionPane.CLOSED_OPTION;
+		*/
+	}
+	
+	private static void sendReport(Exception e) {
+	
+	}
+	
+	private static void sendReportToRoot(Exception e) {
+	
 	}
 	
 }

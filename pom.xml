@@ -249,7 +249,7 @@
             <version>2021.03.04</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>org.pushing-pixels</groupId>
             <artifactId>radiance-common</artifactId>
             <version>5.0.0</version>
@@ -268,7 +268,7 @@
             <groupId>com.glazedlists</groupId>
             <artifactId>glazedlists</artifactId>
             <version>1.11.0</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>com.dorkbox</groupId>
             <artifactId>SystemTray</artifactId>
@@ -279,7 +279,7 @@
             <artifactId>SystemTray-Dorkbox-Util</artifactId>
             <version>2.20</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.googlecode.lanterna</groupId>
             <artifactId>lanterna</artifactId>
             <version>3.1.1</version>
@@ -294,7 +294,7 @@
             <artifactId>correlation-matrix-k</artifactId>
             <version>1.0.3</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>com.alexandriasoftware.swing</groupId>
             <artifactId>jsplitbutton</artifactId>
@@ -310,12 +310,12 @@
             <artifactId>treetable</artifactId>
             <version>0.0.1</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.k33ptoo</groupId>
             <artifactId>KControls</artifactId>
             <version>2.0</version>
         </dependency>
-        <!--dependency>
+        <dependency>
             <groupId>org.oxbow</groupId>
             <artifactId>swing-bits</artifactId>
             <version>1.0.0-SNAPSHOT</version>
@@ -335,6 +335,18 @@
             <artifactId>swing-extensions</artifactId>
             <version>1.4.0</version>
         </dependency-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.32</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>2.0.0-alpha6</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

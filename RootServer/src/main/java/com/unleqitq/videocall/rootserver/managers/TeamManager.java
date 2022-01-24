@@ -98,4 +98,13 @@ public class TeamManager extends AbstractTeamManager {
 		return team;
 	}
 	
+	@NotNull
+	public UUID getTeamUuid() {
+		UUID uuid;
+		do {
+			uuid = UUID.randomUUID();
+		} while (getTeamMap().containsKey(uuid));
+		return uuid;
+	}
+	
 }

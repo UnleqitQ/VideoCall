@@ -56,6 +56,8 @@ public class TeamCallDefinition extends CallDefinition {
 	
 	@Override
 	public boolean testMember(@NotNull UUID user) {
+		if (user.equals(getCreator()))
+			return true;
 		if (denied.contains(user))
 			return false;
 		if (members.contains(user))
@@ -78,6 +80,7 @@ public class TeamCallDefinition extends CallDefinition {
 				result.addAll(getManagerHandler().getTeamManager().getTeam(team).getMembers());
 		}
 		result.removeAll(denied);
+		result.add(getCreator());
 		return result;
 	}
 	
