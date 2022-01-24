@@ -8,13 +8,16 @@ import com.unleqitq.videocall.swingutils.QTextField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class UserList {
+public class UserList implements KeyListener {
 	
 	public Map<UUID, User> users;
 	CacheLoader cacheLoader = new CacheLoader<UUID, UserListPanel>() {
@@ -26,12 +29,15 @@ public class UserList {
 	};
 	public LoadingCache<UUID, UserListPanel> panelCache = CacheBuilder.newBuilder().expireAfterAccess(30,
 			TimeUnit.SECONDS).build(cacheLoader);
-	public Set<UUID> members;
-	public Set<UUID> denied;
-	JPanel panel = new JPanel();
+	public Set<UUID> members = new HashSet<>();
+	public Set<UUID> denied = new HashSet<>();
+	public JPanel panel = new JPanel();
 	QTextField searchField = new QTextField();
+	JLabel memberLabel = new JLabel("Members");
 	JScrollPane memberScrollPane = new JScrollPane();
+	JLabel deniedLabel = new JLabel("Denied");
 	JScrollPane deniedScrollPane = new JScrollPane();
+	JLabel allLabel = new JLabel("All");
 	JScrollPane allScrollPane = new JScrollPane();
 	
 	JPanel memberPanel = new JPanel();
@@ -40,26 +46,46 @@ public class UserList {
 	
 	public UserList(Map<UUID, User> users) {
 		this.users = users;
+		panel.setMinimumSize(new Dimension(200, 200));
+		panel.setPreferredSize(new Dimension(220, 400));
 		GridBagLayout gbl = new GridBagLayout();
-		gbl.rowWeights = new double[]{0.5, 1, 1, 1};
+		gbl.rowWeights = new double[]{0.5, 0.1, 1, 0.1, 1, 0.1, 1};
 		gbl.columnWeights = new double[]{1};
 		panel.setLayout(gbl);
 		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridy = 0;
 		panel.add(searchField, gbc);
+		
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridy = 1;
-		panel.add(memberScrollPane, gbc);
+		panel.add(memberLabel, gbc);
+		gbc.fill = GridBagConstraints.BOTH;
 		gbc.gridy = 2;
-		panel.add(deniedScrollPane, gbc);
+		panel.add(memberScrollPane, gbc);
+		
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridy = 3;
+		panel.add(deniedLabel, gbc);
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.gridy = 4;
+		panel.add(deniedScrollPane, gbc);
+		
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridy = 5;
+		panel.add(allLabel, gbc);
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.gridy = 6;
 		panel.add(allScrollPane, gbc);
+		
 		memberScrollPane.setViewportView(memberPanel);
 		allScrollPane.setViewportView(allPanel);
 		deniedScrollPane.setViewportView(deniedPanel);
 		memberPanel.setLayout(new BoxLayout(memberPanel, BoxLayout.Y_AXIS));
 		allPanel.setLayout(new BoxLayout(allPanel, BoxLayout.Y_AXIS));
 		deniedPanel.setLayout(new BoxLayout(deniedPanel, BoxLayout.Y_AXIS));
+		
+		searchField.addKeyListener(this);
 	}
 	
 	public void updateList() {
@@ -84,11 +110,11 @@ public class UserList {
 				e.printStackTrace();
 			}
 		}
-		if (searchField.getText().strip().length() > 2) {
+		if (searchField.getText().strip().length() > 1) {
 			for (User user : users.values()) {
 				if (user.getUsername().toLowerCase().contains(searchField.getText().strip().toLowerCase())) {
 					try {
-						memberPanel.add(panelCache.get(user.getUuid()).panel);
+						allPanel.add(panelCache.get(user.getUuid()).panel);
 					} catch (ExecutionException e) {
 						e.printStackTrace();
 					}
@@ -104,12 +130,37 @@ public class UserList {
 			boolean hovering = false;
 			try {
 				hovering = new Rectangle(p.panel.getLocationOnScreen(), p.panel.getSize()).contains(pos);
+			} catch (Exception ignored) {
+			}
+			try {
 				hovering |= new Rectangle(p.memberPanel.getLocationOnScreen(), p.memberPanel.getSize()).contains(pos);
+			} catch (Exception ignored) {
+			}
+			try {
 				hovering |= new Rectangle(p.deniedPanel.getLocationOnScreen(), p.deniedPanel.getSize()).contains(pos);
 			} catch (Exception ignored) {
 			}
 			p.update(hovering);
 		}
+		panel.setVisible(true);
+		memberPanel.setVisible(true);
+		allPanel.setVisible(true);
+		deniedPanel.setVisible(true);
+	}
+	
+	@Override
+	public void keyTyped(KeyEvent e) {
+		updateList();
+	}
+	
+	@Override
+	public void keyPressed(KeyEvent e) {
+		updateList();
+	}
+	
+	@Override
+	public void keyReleased(KeyEvent e) {
+		updateList();
 	}
 	
 }

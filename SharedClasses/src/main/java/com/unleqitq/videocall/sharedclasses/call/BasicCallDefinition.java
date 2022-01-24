@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,7 +18,7 @@ public class BasicCallDefinition extends CallDefinition {
 	private Set<UUID> members = new HashSet<>();
 	private Set<UUID> denied = new HashSet<>();
 	
-	public BasicCallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator, long time, String name) {
+	public BasicCallDefinition(@NotNull IManagerHandler managerHandler, @Nullable UUID uuid, @NotNull UUID creator, long time, String name) {
 		super(managerHandler, uuid, creator, time, name);
 	}
 	
