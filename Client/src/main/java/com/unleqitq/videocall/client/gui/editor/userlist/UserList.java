@@ -66,29 +66,48 @@ public class UserList {
 		deniedPanel.removeAll();
 		allPanel.removeAll();
 		memberPanel.removeAll();
-		for (UUID uuid :
-				members) {
+		for (UUID uuid : members) {
 			try {
-				memberPanel.add(panelCache.get(uuid).panel);
-			} catch (ExecutionException e) {
+				User user = users.get(uuid);
+				if (user.getUsername().toLowerCase().contains(searchField.getText().strip().toLowerCase()))
+					memberPanel.add(panelCache.get(uuid).memberPanel);
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		for (UUID uuid :
-				denied) {
+		for (UUID uuid : denied) {
 			try {
-				deniedPanel.add(panelCache.get(uuid).panel);
-			} catch (ExecutionException e) {
+				User user = users.get(uuid);
+				if (user.getUsername().toLowerCase().contains(searchField.getText().strip().toLowerCase()))
+					deniedPanel.add(panelCache.get(uuid).deniedPanel);
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		for (UUID uuid :
-				denied) {
-			try {
-				deniedPanel.add(panelCache.get(uuid).panel);
-			} catch (ExecutionException e) {
-				e.printStackTrace();
+		if (searchField.getText().strip().length() > 2) {
+			for (User user : users.values()) {
+				if (user.getUsername().toLowerCase().contains(searchField.getText().strip().toLowerCase())) {
+					try {
+						memberPanel.add(panelCache.get(user.getUuid()).panel);
+					} catch (ExecutionException e) {
+						e.printStackTrace();
+					}
+				}
 			}
+		}
+	}
+	
+	public void update() {
+		Point pos = MouseInfo.getPointerInfo().getLocation();
+		for (UserListPanel p : panelCache.asMap().values()) {
+			boolean hovering = false;
+			try {
+				hovering = new Rectangle(p.panel.getLocationOnScreen(), p.panel.getSize()).contains(pos);
+				hovering |= new Rectangle(p.memberPanel.getLocationOnScreen(), p.memberPanel.getSize()).contains(pos);
+				hovering |= new Rectangle(p.deniedPanel.getLocationOnScreen(), p.deniedPanel.getSize()).contains(pos);
+			} catch (Exception ignored) {
+			}
+			p.update(hovering);
 		}
 	}
 	
