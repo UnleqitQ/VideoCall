@@ -12,7 +12,7 @@ public class CallsPane {
 	}
 	
 	public void init() {
-		pane.setLeftComponent(callsList.scrollPane);
+		pane.setLeftComponent(callsList.root);
 		pane.setRightComponent(callInfoPanel.panel);
 		pane.setDividerLocation(220);
 	}

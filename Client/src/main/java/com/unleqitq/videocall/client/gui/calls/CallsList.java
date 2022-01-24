@@ -2,6 +2,8 @@ package com.unleqitq.videocall.client.gui.calls;
 
 import com.github.weisj.darklaf.listener.MouseClickListener;
 import com.unleqitq.videocall.client.Client;
+import com.unleqitq.videocall.client.gui.editor.BasicCallEditor;
+import com.unleqitq.videocall.transferclasses.base.RequestAllUser;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -12,13 +14,30 @@ import java.util.*;
 
 public class CallsList implements MouseClickListener {
 	
+	public JPanel root = new JPanel();
 	JScrollPane scrollPane = new JScrollPane();
 	JPanel panel = new JPanel();
 	UUID selected = null;
+	JButton createBasicButton = new JButton("Create Basic");
+	JButton createTeamButton = new JButton("Create Team");
 	Set<UUID> callSet = new HashSet<>();
 	Map<UUID, CallListPanel> callPanelMap = new HashMap<>();
 	
 	public CallsList() {
+		root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+		root.add(createBasicButton);
+		root.add(createTeamButton);
+		root.add(scrollPane);
+		createBasicButton.addActionListener((event) -> new Thread(() -> {
+			createBasicButton.setEnabled(false);
+			Client.getInstance().connection.send(new RequestAllUser());
+			try {
+				Thread.sleep(1000 * 4);
+			} catch (InterruptedException ignored) {
+			}
+			new BasicCallEditor(new HashMap<>(Client.getInstance().userCache.asMap()));
+			createBasicButton.setEnabled(true);
+		}).start());
 		scrollPane.setViewportView(panel);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.addMouseListener(this);
