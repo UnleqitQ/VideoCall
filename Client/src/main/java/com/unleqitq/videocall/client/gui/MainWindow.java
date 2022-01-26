@@ -23,6 +23,8 @@ public class MainWindow {
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		frame.setBounds(screen.width / 4, screen.height / 4, screen.width / 2, screen.height / 2);
 		
+		frame.setIconImage(Client.getInstance().icon);
+		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		

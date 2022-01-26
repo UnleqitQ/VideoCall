@@ -3,6 +3,7 @@ package com.unleqitq.videocall.client;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.unleqitq.videocall.client.gui.MainWindow;
+import com.unleqitq.videocall.client.gui.TrayHandler;
 import com.unleqitq.videocall.client.gui.login.LoginGui;
 import com.unleqitq.videocall.client.managers.*;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
@@ -75,8 +77,24 @@ public class Client implements ReceiveListener {
 	
 	public LookAndFeel laf;
 	
+	public BufferedImage icon;
+	
+	public TrayHandler trayHandler;
+	
 	public Client(@NotNull String host, int port) throws IOException {
 		instance = this;
+		
+		icon = new BufferedImage(16, 16, BufferedImage.TYPE_3BYTE_BGR);
+		
+		{
+			Graphics2D g = icon.createGraphics();
+			g.setColor(Color.BLACK);
+			g.drawLine(0, 0, 128, 128);
+			g.setColor(Color.RED);
+			g.drawLine(0, 16, 16, 0);
+			g.setStroke(new BasicStroke(2));
+			g.dispose();
+		}
 		
 		loadConfig();
 		refreshThread = new Thread(threadGroup, this::refreshLoop);
@@ -152,6 +170,7 @@ public class Client implements ReceiveListener {
 		refreshThread.start();
 		unknownRequestThread.start();
 		window = new MainWindow();
+		trayHandler = new TrayHandler();
 	}
 	
 	@NotNull
