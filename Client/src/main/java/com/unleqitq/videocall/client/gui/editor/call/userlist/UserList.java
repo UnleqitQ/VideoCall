@@ -1,4 +1,4 @@
-package com.unleqitq.videocall.client.gui.editor.userlist;
+package com.unleqitq.videocall.client.gui.editor.call.userlist;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -49,7 +49,7 @@ public class UserList implements KeyListener {
 		panel.setMinimumSize(new Dimension(200, 200));
 		panel.setPreferredSize(new Dimension(220, 400));
 		GridBagLayout gbl = new GridBagLayout();
-		gbl.rowWeights = new double[]{0.5, 0.1, 1, 0.1, 1, 0.1, 1};
+		gbl.rowWeights = new double[]{1, 1, 100, 1, 100, 1, 100};
 		gbl.columnWeights = new double[]{1};
 		panel.setLayout(gbl);
 		GridBagConstraints gbc = new GridBagConstraints();

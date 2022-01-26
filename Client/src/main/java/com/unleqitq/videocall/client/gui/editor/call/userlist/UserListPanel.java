@@ -1,4 +1,4 @@
-package com.unleqitq.videocall.client.gui.editor.userlist;
+package com.unleqitq.videocall.client.gui.editor.call.userlist;
 
 import com.github.weisj.darklaf.listener.MouseClickListener;
 import com.unleqitq.videocall.sharedclasses.user.User;

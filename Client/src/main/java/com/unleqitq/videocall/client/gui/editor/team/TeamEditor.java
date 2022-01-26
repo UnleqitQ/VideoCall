@@ -1,47 +1,68 @@
 package com.unleqitq.videocall.client.gui.editor.team;
 
-import com.github.lgooddatepicker.components.DatePicker;
 import com.unleqitq.videocall.client.Client;
+import com.unleqitq.videocall.client.gui.editor.team.userlist.UserList;
 import com.unleqitq.videocall.sharedclasses.team.Team;
+import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.swingutils.QTextField;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Calendar;
+import java.util.Map;
+import java.util.UUID;
 
 public class TeamEditor {
 	
 	public JFrame frame = new JFrame("TeamEditor");
 	public JTextField nameField = new QTextField();
-	public JSpinner timeSpinner;
-	public DatePicker datePicker = new DatePicker();
 	public JEditorPane editorPane = new JEditorPane();
 	public JButton saveButton = new JButton("Save");
 	
-	public TeamEditor() {
-		{
-			SpinnerDateModel model = new SpinnerDateModel();
-			model.setCalendarField(Calendar.MINUTE);
-			timeSpinner = new JSpinner(model);
-			timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, "hh:mm:ss"));
-		}
+	public Map<UUID, User> users;
+	public UserList userList;
+	public Thread updateThread;
+	
+	public TeamEditor(Map<UUID, User> users) {
+		this.users = users;
+		userList = new UserList(users);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setBounds(50, 50, 500, 500);
-		frame.setLayout(new GridLayout(4, 1));
-		frame.add(nameField);
-		frame.add(timeSpinner);
-		frame.add(datePicker);
-		frame.add(editorPane);
-		frame.add(saveButton);
+		frame.setLayout(new BorderLayout());
+		frame.add(nameField, BorderLayout.NORTH);
+		frame.add(editorPane, BorderLayout.CENTER);
+		frame.add(saveButton, BorderLayout.SOUTH);
+		frame.add(userList.panel, BorderLayout.EAST);
 		frame.setVisible(true);
 		saveButton.addActionListener(e -> {
+			if (nameField.getText().strip().length() < 2) {
+				new Thread(() -> Client.errorDialog("Please input a name with at least Two Characters", "Wrong input",
+						JOptionPane.DEFAULT_OPTION)).start();
+				return;
+			}
 			TeamData teamData = new TeamData(
 					new Team(Client.getInstance().managerHandler, null, Client.getInstance().userUuid,
 							nameField.getText()));
 			Client.getInstance().connection.send(teamData);
 			frame.dispose();
+			updateThread.interrupt();
 		});
+		
+		updateThread = new Thread(this::updateLoop);
+		updateThread.start();
+	}
+	
+	public void updateLoop() {
+		while (true) {
+			userList.updateList();
+			if (frame.isActive())
+				frame.setVisible(frame.isVisible());
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException ignored) {
+				return;
+			}
+		}
 	}
 	
 }

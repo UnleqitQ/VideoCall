@@ -3,6 +3,7 @@ package com.unleqitq.videocall.client.gui.teams.list;
 import com.github.weisj.darklaf.listener.MouseClickListener;
 import com.unleqitq.videocall.client.Client;
 import com.unleqitq.videocall.client.gui.editor.team.TeamEditor;
+import com.unleqitq.videocall.transferclasses.base.RequestAllUser;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -24,7 +25,16 @@ public class TeamsList implements MouseClickListener {
 	public TeamsList() {
 		root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
 		root.add(createButton);
-		createButton.addActionListener((event) -> new TeamEditor());
+		createButton.addActionListener((event) -> new Thread(() -> {
+			createButton.setEnabled(false);
+			Client.getInstance().connection.send(new RequestAllUser());
+			try {
+				Thread.sleep(1000 * 4);
+			} catch (InterruptedException ignored) {
+			}
+			new TeamEditor(new HashMap<>(Client.getInstance().userCache.asMap()));
+			createButton.setEnabled(true);
+		}).start());
 		root.add(scrollPane);
 		scrollPane.setViewportView(panel);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
