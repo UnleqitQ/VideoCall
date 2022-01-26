@@ -6,6 +6,7 @@ import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.swingutils.QTextField;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,6 +14,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public class TeamEditor {
+	
+	public UUID uuid = null;
+	public UUID creatorUuid = Client.getInstance().userUuid;
 	
 	public JFrame frame = new JFrame("TeamEditor");
 	public JTextField nameField = new QTextField();
@@ -41,7 +45,7 @@ public class TeamEditor {
 				return;
 			}
 			TeamData teamData = new TeamData(
-					new Team(Client.getInstance().managerHandler, null, Client.getInstance().userUuid,
+					new Team(Client.getInstance().managerHandler, uuid, creatorUuid,
 							nameField.getText()));
 			Client.getInstance().connection.send(teamData);
 			frame.dispose();
@@ -50,6 +54,13 @@ public class TeamEditor {
 		
 		updateThread = new Thread(this::updateLoop);
 		updateThread.start();
+	}
+	
+	public void setEdit(@NotNull Team team) {
+		uuid = team.getUuid();
+		creatorUuid = team.getCreator();
+		userList.members.addAll(team.getMembers());
+		nameField.setText(team.getName());
 	}
 	
 	public void updateLoop() {

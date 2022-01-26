@@ -8,6 +8,7 @@ import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -38,6 +39,14 @@ public class BasicCallDefinition extends CallDefinition {
 	public void denyMember(@NotNull UUID user) {
 		denied.add(user);
 		members.remove(user);
+	}
+	
+	public Set<UUID> members() {
+		return Collections.unmodifiableSet(members);
+	}
+	
+	public Set<UUID> denied() {
+		return Collections.unmodifiableSet(denied);
 	}
 	
 	@Override

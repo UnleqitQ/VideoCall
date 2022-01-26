@@ -7,6 +7,7 @@ import com.google.gson.JsonPrimitive;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -134,6 +135,18 @@ public class TeamCallDefinition extends CallDefinition {
 	@Override
 	public String toString() {
 		return "TeamCallDefinition" + save();
+	}
+	
+	public Set<UUID> members() {
+		return Collections.unmodifiableSet(members);
+	}
+	
+	public Set<UUID> denied() {
+		return Collections.unmodifiableSet(denied);
+	}
+	
+	public Set<UUID> teams() {
+		return Collections.unmodifiableSet(teams);
 	}
 	
 }

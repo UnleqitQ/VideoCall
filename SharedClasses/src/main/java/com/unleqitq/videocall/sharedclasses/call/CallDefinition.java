@@ -25,6 +25,7 @@ public abstract class CallDefinition {
 	private long changed;
 	private long time;
 	private String name;
+	private String description;
 	
 	public CallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator, long time, String name) {
 		this.managerHandler = managerHandler;
@@ -34,10 +35,19 @@ public abstract class CallDefinition {
 		changed = System.currentTimeMillis();
 		this.time = time;
 		this.name = name;
+		description = "";
 	}
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public String getDescription() {
+		return description;
 	}
 	
 	public void setTime(long time) {

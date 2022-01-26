@@ -7,6 +7,7 @@ import com.unleqitq.videocall.sharedclasses.call.BasicCallDefinition;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.swingutils.QTextField;
 import com.unleqitq.videocall.transferclasses.base.data.CallData;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,11 +16,15 @@ import java.awt.event.WindowEvent;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
 public class BasicCallEditor {
 	
+	public UUID uuid = null;
+	public UUID creatorUuid = Client.getInstance().userUuid;
 	public JFrame frame = new JFrame("BasicCallEditor");
 	public JTextField nameField = new QTextField();
 	public JSpinner hourSpinner = new JSpinner(
@@ -75,14 +80,15 @@ public class BasicCallEditor {
 			long time = Instant.from(
 					datePicker.getDate().atTime((int) hourSpinner.getValue(), (int) minuteSpinner.getValue(),
 							0)).getEpochSecond() * 1000;
-			BasicCallDefinition callDefinition = new BasicCallDefinition(Client.getInstance().managerHandler, null,
-					Client.getInstance().userUuid, time, nameField.getText());
+			BasicCallDefinition callDefinition = new BasicCallDefinition(Client.getInstance().managerHandler, uuid,
+					creatorUuid, time, nameField.getText());
 			for (UUID uuid : userList.members) {
 				callDefinition.addMember(uuid);
 			}
 			for (UUID uuid : userList.denied) {
 				callDefinition.denyMember(uuid);
 			}
+			callDefinition.setDescription(editorPane.getText());
 			CallData callData = new CallData(callDefinition);
 			Client.getInstance().connection.send(callData);
 			frame.dispose();
@@ -91,6 +97,21 @@ public class BasicCallEditor {
 		
 		updateThread = new Thread(this::updateLoop);
 		updateThread.start();
+	}
+	
+	public void setEdit(@NotNull BasicCallDefinition call) {
+		uuid = call.getUuid();
+		creatorUuid = call.getCreator();
+		userList.members.addAll(call.members());
+		userList.denied.addAll(call.denied());
+		nameField.setText(call.getName());
+		editorPane.setText(call.getDescription());
+		Date date = new Date(call.getTime());
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		datePicker.setDate(LocalDate.from(calendar.toInstant()));
+		minuteSpinner.setValue(calendar.get(Calendar.MINUTE));
+		hourSpinner.setValue(calendar.get(Calendar.HOUR_OF_DAY));
 	}
 	
 	public void updateLoop() {
