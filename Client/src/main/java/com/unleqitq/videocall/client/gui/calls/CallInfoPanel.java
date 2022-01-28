@@ -149,7 +149,7 @@ public class CallInfoPanel {
 				"Created: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(call.getCreatedLDT()));
 		timeLabel.setText(
 				"Planned for: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(call.getTimeLDT()));
-		editButton.setEnabled(call.getCreator() == Client.getInstance().userUuid);
+		editButton.setEnabled(call.getCreator().equals(Client.getInstance().userUuid));
 		infoArea.setText(call.getDescription());
 		{
 			long difference = call.getTime() - System.currentTimeMillis();

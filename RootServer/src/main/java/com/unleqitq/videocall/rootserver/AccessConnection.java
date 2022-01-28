@@ -2,6 +2,7 @@ package com.unleqitq.videocall.rootserver;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.unleqitq.videocall.sharedclasses.DisconnectListener;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.account.Account;
@@ -21,7 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
 
-public class AccessConnection implements ReceiveListener {
+public class AccessConnection implements ReceiveListener, DisconnectListener {
 	
 	public ServerNetworkConnection connection;
 	RootServer rootServer;
@@ -32,6 +33,7 @@ public class AccessConnection implements ReceiveListener {
 	public AccessConnection(@NotNull ServerNetworkConnection connection, RootServer rootServer) {
 		this.connection = connection;
 		connection.setReceiveListener(this);
+		connection.setDisconnectListener(this);
 		this.rootServer = rootServer;
 		
 		synchronize();
@@ -125,5 +127,9 @@ public class AccessConnection implements ReceiveListener {
 		connection.send(listData);
 	}
 	
+	@Override
+	public void onDisconnect() {
+		System.out.println("Disconnected " + port);
+	}
 	
 }
