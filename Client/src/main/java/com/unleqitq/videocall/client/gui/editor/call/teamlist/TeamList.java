@@ -33,9 +33,9 @@ public class TeamList implements KeyListener {
 	public Set<UUID> denied = new HashSet<>();
 	public JPanel panel = new JPanel();
 	QTextField searchField = new QTextField();
-	JLabel memberLabel = new JLabel("Members");
+	JLabel memberLabel = new JLabel("Selected Teams");
 	JScrollPane memberScrollPane = new JScrollPane();
-	JLabel allLabel = new JLabel("All");
+	JLabel allLabel = new JLabel("All Teams");
 	JScrollPane allScrollPane = new JScrollPane();
 	
 	JPanel memberPanel = new JPanel();

@@ -103,6 +103,15 @@ public class CallManager extends AbstractCallManager {
 		reader.close();
 	}
 	
+	@NotNull
+	public UUID getCallUuid() {
+		UUID uuid;
+		do {
+			uuid = UUID.randomUUID();
+		} while (getCallMap().containsKey(uuid));
+		return uuid;
+	}
+	
 	@Override
 	public void addCall(@NotNull CallDefinition call) {
 		callMap.put(call.getUuid(), call);

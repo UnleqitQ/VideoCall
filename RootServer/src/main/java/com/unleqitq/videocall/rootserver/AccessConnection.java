@@ -6,14 +6,13 @@ import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.account.Account;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
+import com.unleqitq.videocall.sharedclasses.call.CallInformation;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.Data;
+import com.unleqitq.videocall.transferclasses.base.CallRequest;
 import com.unleqitq.videocall.transferclasses.base.ListData;
-import com.unleqitq.videocall.transferclasses.base.data.AccountData;
-import com.unleqitq.videocall.transferclasses.base.data.CallData;
-import com.unleqitq.videocall.transferclasses.base.data.TeamData;
-import com.unleqitq.videocall.transferclasses.base.data.UserData;
+import com.unleqitq.videocall.transferclasses.base.data.*;
 import com.unleqitq.videocall.transferclasses.connection.MachineInformation;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +31,7 @@ public class AccessConnection implements ReceiveListener {
 	
 	public AccessConnection(@NotNull ServerNetworkConnection connection, RootServer rootServer) {
 		this.connection = connection;
-		connection.setListener(this);
+		connection.setReceiveListener(this);
 		this.rootServer = rootServer;
 		
 		synchronize();
@@ -67,6 +66,34 @@ public class AccessConnection implements ReceiveListener {
 				}
 			}
 		}
+		if (data.getData() instanceof CallDefData callDefData) {
+			System.out.println(callDefData);
+			if (callDefData.getUUID() != null) {
+				CallDefinition callDefinition = callDefData.getCall(rootServer.getManagerHandler());
+				rootServer.getManagerHandler().getCallManager().addCall(callDefinition);
+				for (AccessConnection connection : rootServer.accessQueue) {
+					connection.connection.send(new CallDefData(callDefinition));
+				}
+			}
+			else {
+				UUID uuid = rootServer.getManagerHandler().getCallManager().getCallUuid();
+				JsonObject object = callDefData.getJsonObject();
+				object.add("uuid", new JsonPrimitive(uuid.toString()));
+				CallDefinition callDefinition = CallDefinition.load(rootServer.getManagerHandler(), object);
+				rootServer.getManagerHandler().getCallManager().addCall(callDefinition);
+				for (AccessConnection connection : rootServer.accessQueue) {
+					connection.connection.send(new CallDefData(callDefinition));
+				}
+			}
+		}
+		if (data.getData() instanceof CallRequest callRequest) {
+			UUID callUuid = callRequest.uuid();
+			UUID serverUuid = rootServer.allocateServer(callUuid);
+			CallConnection callConnection = rootServer.getCallConnections().get(serverUuid);
+			connection.send(new CallData(new CallInformation(callUuid, serverUuid,
+					callConnection.connection.getSocket().getInetAddress().getCanonicalHostName(),
+					callConnection.port)));
+		}
 	}
 	
 	public void synchronize() {
@@ -82,7 +109,7 @@ public class AccessConnection implements ReceiveListener {
 		
 		int i = 0;
 		for (CallDefinition call : calls) {
-			array[i++] = new CallData(call);
+			array[i++] = new CallDefData(call);
 		}
 		for (User user : users) {
 			array[i++] = new UserData(user);

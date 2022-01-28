@@ -44,9 +44,13 @@ public class TeamEditor {
 						JOptionPane.DEFAULT_OPTION)).start();
 				return;
 			}
-			TeamData teamData = new TeamData(
-					new Team(Client.getInstance().managerHandler, uuid, creatorUuid,
-							nameField.getText()));
+			
+			Team team = new Team(Client.getInstance().managerHandler, uuid, creatorUuid, nameField.getText());
+			for (UUID uuid : userList.members) {
+				team.addUser(uuid);
+			}
+			;
+			TeamData teamData = new TeamData(team);
 			Client.getInstance().connection.send(teamData);
 			frame.dispose();
 			updateThread.interrupt();

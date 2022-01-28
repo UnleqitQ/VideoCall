@@ -17,7 +17,7 @@ public class ClientConnection implements ReceiveListener {
 	
 	public ClientConnection(@NotNull ServerNetworkConnection connection, CallServer callServer) {
 		this.connection = connection;
-		connection.setListener(this);
+		connection.setReceiveListener(this);
 		this.callServer = callServer;
 		
 		System.out.println("Established Client Connection: " + connection.getSocket());

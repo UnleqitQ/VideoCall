@@ -1,8 +1,14 @@
 package com.unleqitq.videocall.client.gui.calls;
 
 import com.unleqitq.videocall.client.Client;
+import com.unleqitq.videocall.client.gui.editor.call.BasicCallEditor;
+import com.unleqitq.videocall.client.gui.editor.call.TeamCallEditor;
+import com.unleqitq.videocall.sharedclasses.call.BasicCallDefinition;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
+import com.unleqitq.videocall.sharedclasses.call.TeamCallDefinition;
 import com.unleqitq.videocall.sharedclasses.user.User;
+import com.unleqitq.videocall.transferclasses.base.CallRequest;
+import com.unleqitq.videocall.transferclasses.base.RequestAllUser;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,6 +16,7 @@ import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class CallInfoPanel {
@@ -23,6 +30,10 @@ public class CallInfoPanel {
 	JLabel creatorLabel = new JLabel();
 	JLabel createdLabel = new JLabel();
 	JPanel midPanel = new JPanel();
+	JPanel topPanel = new JPanel();
+	
+	JButton joinButton = new JButton("Join");
+	JButton editButton = new JButton("Edit");
 	
 	JTextArea infoArea = new JTextArea();
 	JList<String> membersList = new JList<>();
@@ -59,8 +70,12 @@ public class CallInfoPanel {
 		internalPanel.setLayout(new BorderLayout());
 		internalPanel.add(midPanel, BorderLayout.CENTER);
 		internalPanel.add(membersList, BorderLayout.EAST);
+		internalPanel.add(topPanel, BorderLayout.NORTH);
 		internalPanel.add(infoArea, BorderLayout.SOUTH);
 		
+		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.LINE_AXIS));
+		topPanel.add(editButton);
+		topPanel.add(joinButton);
 		
 		membersList.setMinimumSize(new Dimension(200, 200));
 		membersList.setPreferredSize(new Dimension(200, 900));
@@ -86,6 +101,37 @@ public class CallInfoPanel {
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.BOTH;
 		panel.add(internalPanel, gbc);
+		
+		editButton.addActionListener(e -> {
+			UUID sel = parent.callsList.selected;
+			if (sel == null) {
+				return;
+			}
+			editButton.setEnabled(false);
+			Client.getInstance().connection.send(new RequestAllUser());
+			try {
+				Thread.sleep(1000 * 4);
+			} catch (InterruptedException ignored) {
+			}
+			CallDefinition call = Client.getInstance().getCall(sel);
+			if (call instanceof TeamCallDefinition tc) {
+				TeamCallEditor callEditor = new TeamCallEditor(new HashMap<>(Client.getInstance().userCache.asMap()),
+						new HashMap<>(Client.getInstance().teamCache.asMap()));
+				callEditor.setEdit(tc);
+			}
+			if (call instanceof BasicCallDefinition bc) {
+				BasicCallEditor callEditor = new BasicCallEditor(new HashMap<>(Client.getInstance().userCache.asMap()));
+				callEditor.setEdit(bc);
+			}
+			editButton.setEnabled(true);
+		});
+		joinButton.addActionListener(e -> {
+			UUID sel = parent.callsList.selected;
+			if (sel == null) {
+				return;
+			}
+			Client.getInstance().connection.send(new CallRequest(sel));
+		});
 	}
 	
 	public void update() {
@@ -103,6 +149,8 @@ public class CallInfoPanel {
 				"Created: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(call.getCreatedLDT()));
 		timeLabel.setText(
 				"Planned for: " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(call.getTimeLDT()));
+		editButton.setEnabled(call.getCreator() == Client.getInstance().userUuid);
+		infoArea.setText(call.getDescription());
 		{
 			long difference = call.getTime() - System.currentTimeMillis();
 			long d0 = difference;

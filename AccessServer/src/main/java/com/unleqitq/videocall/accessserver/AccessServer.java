@@ -7,14 +7,12 @@ import com.unleqitq.videocall.sharedclasses.Server;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.account.Account;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
+import com.unleqitq.videocall.sharedclasses.call.CallInformation;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.Data;
 import com.unleqitq.videocall.transferclasses.base.ListData;
-import com.unleqitq.videocall.transferclasses.base.data.AccountData;
-import com.unleqitq.videocall.transferclasses.base.data.CallData;
-import com.unleqitq.videocall.transferclasses.base.data.TeamData;
-import com.unleqitq.videocall.transferclasses.base.data.UserData;
+import com.unleqitq.videocall.transferclasses.base.data.*;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import com.unleqitq.videocall.transferclasses.connection.MachineInformation;
 import org.apache.commons.codec.DecoderException;
@@ -25,15 +23,16 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AccessServer implements ReceiveListener {
 	
 	@NotNull
 	private static AccessServer instance;
 	
+	@NotNull
+	public Map<UUID, Queue<UUID>> callRequestMap = new HashMap<>();
 	
 	@NotNull
 	private final ManagerHandler managerHandler;
@@ -41,7 +40,8 @@ public class AccessServer implements ReceiveListener {
 	@NotNull YAMLConfiguration configuration = new YAMLConfiguration();
 	@NotNull Server server;
 	@NotNull Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());
-	@NotNull Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull Set<ClientConnection> preConnections = Collections.synchronizedSet(new HashSet<>());
+	@NotNull Map<UUID, ClientConnection> clientConnections = new ConcurrentHashMap<>();
 	
 	@NotNull Thread thread;
 	long lastInfo = System.currentTimeMillis();
@@ -72,7 +72,7 @@ public class AccessServer implements ReceiveListener {
 		Socket socket = new Socket(host, port);
 		rootConnection = new ClientNetworkConnection(socket);
 		
-		rootConnection.setListener(this);
+		rootConnection.setReceiveListener(this);
 		
 		rootConnection.init();
 		
@@ -171,7 +171,7 @@ public class AccessServer implements ReceiveListener {
 	
 	public void addClient(BaseConnection baseConnection) {
 		baseConnections.remove(baseConnection);
-		clientConnections.add(new ClientConnection(baseConnection.connection));
+		preConnections.add(new ClientConnection(baseConnection.connection));
 	}
 	
 	@NotNull
@@ -191,8 +191,8 @@ public class AccessServer implements ReceiveListener {
 					Team team = ((TeamData) d0).getTeam(managerHandler);
 					managerHandler.getTeamManager().addTeam(team);
 				}
-				if (d0 instanceof CallData) {
-					CallDefinition call = ((CallData) d0).getCall(managerHandler);
+				if (d0 instanceof CallDefData) {
+					CallDefinition call = ((CallDefData) d0).getCall(managerHandler);
 					managerHandler.getCallManager().addCall(call);
 				}
 				if (d0 instanceof AccountData) {
@@ -216,13 +216,25 @@ public class AccessServer implements ReceiveListener {
 			managerHandler.getTeamManager().addTeam(team);
 			System.out.println(team);
 		}
-		if (data.getData() instanceof CallData) {
-			CallDefinition call = ((CallData) data.getData()).getCall(managerHandler);
+		if (data.getData() instanceof CallDefData) {
+			CallDefinition call = ((CallDefData) data.getData()).getCall(managerHandler);
 			managerHandler.getCallManager().addCall(call);
+			System.out.println(call);
+		}
+		if (data.getData() instanceof CallData callData) {
+			CallInformation call = callData.getCall();
+			Queue<UUID> queue = callRequestMap.get(call.uuid());
+			while (!queue.isEmpty()) {
+				try {
+					clientConnections.get(queue.poll()).connection.send(callData);
+				} catch (Exception ignored) {
+				}
+			}
 			System.out.println(call);
 		}
 	}
 	
+	@NotNull
 	public ManagerHandler getManagerHandler() {
 		return managerHandler;
 	}

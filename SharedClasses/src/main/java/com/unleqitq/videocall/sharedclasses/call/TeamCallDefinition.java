@@ -21,7 +21,7 @@ public class TeamCallDefinition extends CallDefinition {
 	@NotNull
 	private final Set<UUID> denied = new HashSet<>();
 	
-	public TeamCallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator, long time, String name) {
+	public TeamCallDefinition(@NotNull IManagerHandler managerHandler, UUID uuid, @NotNull UUID creator, long time, String name) {
 		super(managerHandler, uuid, creator, time, name);
 	}
 	
@@ -88,9 +88,10 @@ public class TeamCallDefinition extends CallDefinition {
 	@NotNull
 	public static TeamCallDefinition load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
 		TeamCallDefinition callDefinition = new TeamCallDefinition(managerHandler,
-				UUID.fromString(section.get("uuid").getAsString()),
+				section.has("uuid") ? UUID.fromString(section.get("uuid").getAsString()) : null,
 				UUID.fromString(section.get("creator").getAsString()), section.get("time").getAsLong(),
 				section.get("name").getAsString());
+		callDefinition.setDescription(section.get("description").getAsString());
 		for (JsonElement element : section.getAsJsonArray("members")) {
 			callDefinition.addMember(UUID.fromString(element.getAsString()));
 		}
@@ -107,7 +108,8 @@ public class TeamCallDefinition extends CallDefinition {
 	@Override
 	public JsonObject save() {
 		JsonObject object = new JsonObject();
-		object.add("uuid", new JsonPrimitive(getUuid().toString()));
+		if (getUuid() != null)
+			object.add("uuid", new JsonPrimitive(getUuid().toString()));
 		object.add("creator", new JsonPrimitive(getCreator().toString()));
 		JsonArray memberArray = new JsonArray(members.size());
 		JsonArray deniedArray = new JsonArray(denied.size());
@@ -129,6 +131,7 @@ public class TeamCallDefinition extends CallDefinition {
 		object.add("created", new JsonPrimitive(getCreated()));
 		object.add("changed", new JsonPrimitive(getChanged()));
 		object.add("type", new JsonPrimitive("team"));
+		object.add("description", new JsonPrimitive(getDescription()));
 		return object;
 	}
 	

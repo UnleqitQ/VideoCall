@@ -35,9 +35,9 @@ public class UserList implements KeyListener {
 	QTextField searchField = new QTextField();
 	JLabel memberLabel = new JLabel("Members");
 	JScrollPane memberScrollPane = new JScrollPane();
-	JLabel deniedLabel = new JLabel("Denied");
+	JLabel deniedLabel = new JLabel("Denied Users");
 	JScrollPane deniedScrollPane = new JScrollPane();
-	JLabel allLabel = new JLabel("All");
+	JLabel allLabel = new JLabel("All Users");
 	JScrollPane allScrollPane = new JScrollPane();
 	
 	JPanel memberPanel = new JPanel();

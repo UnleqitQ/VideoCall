@@ -13,7 +13,7 @@ public class BaseConnection implements ReceiveListener {
 	
 	public BaseConnection(@NotNull ServerNetworkConnection connection, RootServer rootServer) {
 		this.connection = connection;
-		connection.setListener(this);
+		connection.setReceiveListener(this);
 		this.rootServer = rootServer;
 	}
 	

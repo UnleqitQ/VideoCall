@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.Serial;
 import java.io.Serializable;
 
-public record AccessInformation(@NotNull String host, @NotNull int port) implements Serializable {
+public record AccessInformation(@NotNull String host, int port) implements Serializable {
 	
 	@Serial
 	private static final long serialVersionUID = -2772669104831032800L;
@@ -15,7 +15,6 @@ public record AccessInformation(@NotNull String host, @NotNull int port) impleme
 		return host;
 	}
 	
-	@NotNull
 	public int getPort() {
 		return port;
 	}

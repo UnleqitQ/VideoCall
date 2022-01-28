@@ -8,7 +8,7 @@ import com.unleqitq.videocall.sharedclasses.call.TeamCallDefinition;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.swingutils.QTextField;
-import com.unleqitq.videocall.transferclasses.base.data.CallData;
+import com.unleqitq.videocall.transferclasses.base.data.CallDefData;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -84,9 +84,12 @@ public class TeamCallEditor {
 						JOptionPane.DEFAULT_OPTION)).start();
 				return;
 			}
-			long time = Instant.from(
-					datePicker.getDate().atTime((int) hourSpinner.getValue(), (int) minuteSpinner.getValue(),
-							0)).getEpochSecond() * 1000;
+			Date date = datePicker.convert().getDateWithDefaultZone();
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(date);
+			calendar.set(Calendar.HOUR_OF_DAY, (int) hourSpinner.getValue());
+			calendar.set(Calendar.MINUTE, (int) minuteSpinner.getValue());
+			long time = calendar.getTimeInMillis();
 			TeamCallDefinition callDefinition = new TeamCallDefinition(Client.getInstance().managerHandler, uuid,
 					creatorUuid, time, nameField.getText());
 			for (UUID uuid : userList.members) {
@@ -99,8 +102,8 @@ public class TeamCallEditor {
 				callDefinition.addTeam(uuid);
 			}
 			callDefinition.setDescription(editorPane.getText());
-			CallData callData = new CallData(callDefinition);
-			Client.getInstance().connection.send(callData);
+			CallDefData callDefData = new CallDefData(callDefinition);
+			Client.getInstance().connection.send(callDefData);
 			frame.dispose();
 			updateThread.interrupt();
 		});

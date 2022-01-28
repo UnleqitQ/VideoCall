@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,7 +18,7 @@ public class BasicCallDefinition extends CallDefinition {
 	private Set<UUID> members = new HashSet<>();
 	private Set<UUID> denied = new HashSet<>();
 	
-	public BasicCallDefinition(@NotNull IManagerHandler managerHandler, @Nullable UUID uuid, @NotNull UUID creator, long time, String name) {
+	public BasicCallDefinition(@NotNull IManagerHandler managerHandler, UUID uuid, @NotNull UUID creator, long time, String name) {
 		super(managerHandler, uuid, creator, time, name);
 	}
 	
@@ -73,9 +72,10 @@ public class BasicCallDefinition extends CallDefinition {
 	@NotNull
 	public static BasicCallDefinition load(@NotNull IManagerHandler managerHandler, @NotNull JsonObject section) {
 		BasicCallDefinition callDefinition = new BasicCallDefinition(managerHandler,
-				UUID.fromString(section.get("uuid").getAsString()),
+				section.has("uuid") ? UUID.fromString(section.get("uuid").getAsString()) : null,
 				UUID.fromString(section.get("creator").getAsString()), section.get("time").getAsLong(),
 				section.get("name").getAsString());
+		callDefinition.setDescription(section.get("description").getAsString());
 		for (JsonElement element : section.getAsJsonArray("members")) {
 			callDefinition.addMember(UUID.fromString(element.getAsString()));
 		}
@@ -89,7 +89,8 @@ public class BasicCallDefinition extends CallDefinition {
 	@Override
 	public JsonObject save() {
 		JsonObject object = new JsonObject();
-		object.add("uuid", new JsonPrimitive(getUuid().toString()));
+		if (getUuid() != null)
+			object.add("uuid", new JsonPrimitive(getUuid().toString()));
 		object.add("creator", new JsonPrimitive(getCreator().toString()));
 		JsonArray memberArray = new JsonArray(members.size());
 		JsonArray deniedArray = new JsonArray(denied.size());
@@ -106,6 +107,7 @@ public class BasicCallDefinition extends CallDefinition {
 		object.add("created", new JsonPrimitive(getCreated()));
 		object.add("changed", new JsonPrimitive(getChanged()));
 		object.add("type", new JsonPrimitive("basic"));
+		object.add("description", new JsonPrimitive(getDescription()));
 		return object;
 	}
 	

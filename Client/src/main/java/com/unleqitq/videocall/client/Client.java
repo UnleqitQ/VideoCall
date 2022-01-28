@@ -9,11 +9,13 @@ import com.unleqitq.videocall.client.managers.*;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
+import com.unleqitq.videocall.sharedclasses.call.CallInformation;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.Data;
 import com.unleqitq.videocall.transferclasses.base.*;
 import com.unleqitq.videocall.transferclasses.base.data.CallData;
+import com.unleqitq.videocall.transferclasses.base.data.CallDefData;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 import com.unleqitq.videocall.transferclasses.base.data.UserData;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
@@ -142,7 +144,7 @@ public class Client implements ReceiveListener {
 			return;
 		}
 		connection = new ClientNetworkConnection(socket);
-		connection.setListener(this);
+		connection.setReceiveListener(this);
 		connection.init();
 		
 		try {
@@ -322,8 +324,8 @@ public class Client implements ReceiveListener {
 					unknownValues.teams.remove(team.getUuid());
 					System.out.println(team);
 				}
-				if (d0 instanceof CallData) {
-					CallDefinition call = ((CallData) d0).getCall(managerHandler);
+				if (d0 instanceof CallDefData) {
+					CallDefinition call = ((CallDefData) d0).getCall(managerHandler);
 					managerHandler.getCallManager().addCall(call);
 					window.callsPane.callsList.add(call.getUuid());
 					unknownValues.calls.remove(call.getUuid());
@@ -334,6 +336,11 @@ public class Client implements ReceiveListener {
 			window.callsPane.callsList.updatePanels();
 			window.teamsPane.teamsList.updateList();
 			window.teamsPane.teamsList.updatePanels();
+		}
+		if (data.getData() instanceof CallData callData) {
+			CallInformation callInformation = callData.getCall();
+			System.out.println(callInformation);
+			infoG(callInformation.toString());
 		}
 		if (data.getData() instanceof AuthenticationResult result) {
 			switch (result.result()) {
@@ -463,6 +470,20 @@ public class Client implements ReceiveListener {
 		}).start()).start();
 	}
 	
+	public static void infoG(String msg) {
+		new Thread(() -> new Thread(() -> {
+			Thread[] threads = new Thread[threadGroup.activeCount() + 2];
+			threadGroup.enumerate(threads);
+			for (Thread thread : threads) {
+				try {
+					thread.interrupt();
+				} catch (SecurityException | NullPointerException ignored) {
+				}
+			}
+			infoDialog(msg, "INFO", JOptionPane.DEFAULT_OPTION);
+		}).start()).start();
+	}
+	
 	public static void errorGAndSend(Exception e) {
 		new Thread(() -> new Thread(() -> {
 			Thread[] threads = new Thread[threadGroup.activeCount() + 2];
@@ -523,6 +544,12 @@ public class Client implements ReceiveListener {
 		if (v < min)
 			return min;
 		return v;
+	}
+	
+	public static int infoDialog(Object message, String title, int optionType) throws HeadlessException {
+		int messageType = JOptionPane.INFORMATION_MESSAGE;
+		int response = JOptionPane.showOptionDialog(null, message, title, optionType, messageType, null, null, null);
+		return response;
 	}
 	
 	@SuppressWarnings ({"deprecation", "UnnecessaryUnboxing", "RedundantSuppression"})

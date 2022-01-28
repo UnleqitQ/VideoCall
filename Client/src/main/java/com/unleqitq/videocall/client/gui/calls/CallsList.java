@@ -19,8 +19,8 @@ public class CallsList implements MouseClickListener {
 	JScrollPane scrollPane = new JScrollPane();
 	JPanel panel = new JPanel();
 	UUID selected = null;
-	JButton createBasicButton = new JButton("Create Basic");
-	JButton createTeamButton = new JButton("Create Team");
+	JButton createBasicButton = new JButton("Create Basic Call");
+	JButton createTeamButton = new JButton("Create Team Call");
 	Set<UUID> callSet = new HashSet<>();
 	Map<UUID, CallListPanel> callPanelMap = new HashMap<>();
 	

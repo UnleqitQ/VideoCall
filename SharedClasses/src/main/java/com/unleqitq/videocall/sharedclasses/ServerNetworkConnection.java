@@ -63,4 +63,9 @@ public class ServerNetworkConnection extends AbstractNetworkConnection {
 	
 	}
 	
+	@Override
+	public String toString() {
+		return "ServerNetworkConnection{ Socket=" + getSocket() + " }";
+	}
+	
 }

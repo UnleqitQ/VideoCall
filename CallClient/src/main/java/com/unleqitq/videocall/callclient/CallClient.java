@@ -73,7 +73,7 @@ public class CallClient implements ReceiveListener {
 		
 		Socket socket = new Socket(host, port);
 		connection = new ClientNetworkConnection(socket);
-		connection.setListener(this);
+		connection.setReceiveListener(this);
 		connection.init();
 		
 		try {

@@ -10,7 +10,7 @@ import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.Data;
 import com.unleqitq.videocall.transferclasses.base.ListData;
-import com.unleqitq.videocall.transferclasses.base.data.CallData;
+import com.unleqitq.videocall.transferclasses.base.data.CallDefData;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 import com.unleqitq.videocall.transferclasses.base.data.UserData;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
@@ -68,7 +68,7 @@ public class CallServer implements ReceiveListener {
 		Socket socket = new Socket(host, port);
 		rootConnection = new ClientNetworkConnection(socket);
 		
-		rootConnection.setListener(this);
+		rootConnection.setReceiveListener(this);
 		
 		rootConnection.init();
 		
@@ -186,8 +186,8 @@ public class CallServer implements ReceiveListener {
 					managerHandler.getTeamManager().addTeam(team);
 					System.out.println(team);
 				}
-				if (d0 instanceof CallData) {
-					CallDefinition call = ((CallData) d0).getCall(managerHandler);
+				if (d0 instanceof CallDefData) {
+					CallDefinition call = ((CallDefData) d0).getCall(managerHandler);
 					managerHandler.getCallManager().addCall(call);
 					System.out.println(call);
 				}

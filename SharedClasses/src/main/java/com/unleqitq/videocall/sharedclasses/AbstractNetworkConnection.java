@@ -18,7 +18,8 @@ public abstract class AbstractNetworkConnection {
 	
 	private Socket socket;
 	private SecretKey aesKey;
-	private ReceiveListener listener;
+	private ReceiveListener receiveListener;
+	private DisconnectListener disconnectListener;
 	protected InputStream inputStream;
 	protected OutputStream outputStream;
 	protected ObjectOutputStream objectOutputStream;
@@ -58,8 +59,12 @@ public abstract class AbstractNetworkConnection {
 		return aesKey;
 	}
 	
-	public void setListener(ReceiveListener listener) {
-		this.listener = listener;
+	public void setReceiveListener(ReceiveListener receiveListener) {
+		this.receiveListener = receiveListener;
+	}
+	
+	public void setDisconnectListener(DisconnectListener disconnectListener) {
+		this.disconnectListener = disconnectListener;
 	}
 	
 	public void setAesKey(SecretKey aesKey) {
@@ -68,6 +73,7 @@ public abstract class AbstractNetworkConnection {
 	
 	public void send(Serializable data) {
 		if (!connected) {
+			disconnectListener.onDisconnect();
 			return;
 		}
 		if (data instanceof SendData) {
@@ -92,6 +98,7 @@ public abstract class AbstractNetworkConnection {
 		} catch (SocketException ignored) {
 			System.out.println("Connection reset " + socket.getInetAddress());
 			connected = false;
+			disconnectListener.onDisconnect();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -118,7 +125,7 @@ public abstract class AbstractNetworkConnection {
 				Data data = CryptoHandler.decrypt((CryptData) sendData, aesKey);
 				//System.out.println("Received " + data);
 				if (data.getDifference() <= maxTimeDifference)
-					listener.onReceive(data);
+					receiveListener.onReceive(data);
 			}
 			else if (sendData instanceof AESKeyData) {
 				onAES((AESKeyData) sendData);

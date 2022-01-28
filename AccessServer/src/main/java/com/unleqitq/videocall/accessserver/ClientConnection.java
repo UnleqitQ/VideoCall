@@ -1,5 +1,6 @@
 package com.unleqitq.videocall.accessserver;
 
+import com.unleqitq.videocall.sharedclasses.DisconnectListener;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.account.Account;
@@ -8,19 +9,21 @@ import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.Data;
 import com.unleqitq.videocall.transferclasses.base.*;
-import com.unleqitq.videocall.transferclasses.base.data.CallData;
+import com.unleqitq.videocall.transferclasses.base.data.CallDefData;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 import com.unleqitq.videocall.transferclasses.base.data.UserData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class ClientConnection implements ReceiveListener {
+public class ClientConnection implements ReceiveListener, DisconnectListener {
 	
 	public ServerNetworkConnection connection;
 	@Nullable
@@ -28,7 +31,8 @@ public class ClientConnection implements ReceiveListener {
 	
 	public ClientConnection(@NotNull ServerNetworkConnection connection) {
 		this.connection = connection;
-		connection.setListener(this);
+		connection.setDisconnectListener(this);
+		connection.setReceiveListener(this);
 		
 		System.out.println("Established Client Connection: " + connection.getSocket());
 		
@@ -36,6 +40,52 @@ public class ClientConnection implements ReceiveListener {
 	
 	@Override
 	public void onReceive(Data data) {
+		if (data.getData() instanceof AuthenticationData authenticationData) {
+			try {
+				Account account = AccessServer.getInstance().getManagerHandler().getAccountManager().getAccount(
+						authenticationData.username());
+				if (account == null) {
+					connection.send(new AuthenticationResult(-2, null));
+					return;
+				}
+				boolean flag = account.test(authenticationData.passphrase(), authenticationData.time());
+				if (flag) {
+					connection.send(new AuthenticationResult(1, account.getUuid()));
+					user = account.getUuid();
+					AccessServer.getInstance().preConnections.remove(this);
+					if (AccessServer.getInstance().clientConnections.containsKey(user)) {
+						ClientConnection existing = AccessServer.getInstance().clientConnections.get(user);
+						System.out.println("User already Logged In");
+						System.out.println("New Connection: " + connection);
+						System.out.println("Preexisting Connection: " + existing.connection);
+						AccessServer.getInstance().clientConnections.remove(user);
+						connection.getReceiveThread().interrupt();
+						AccessServer.getInstance().clientConnections.get(
+								user).connection.getReceiveThread().interrupt();
+						try {
+							connection.getSocket().close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						try {
+							existing.connection.getSocket().close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					AccessServer.getInstance().clientConnections.put(user, this);
+				}
+				else
+					connection.send(new AuthenticationResult(0, null));
+			} catch (NullPointerException e) {
+				connection.send(new AuthenticationResult(-2, null));
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+				connection.send(new AuthenticationResult(-1, null));
+			}
+		}
+		if (user == null)
+			return;
 		if (data.getData() instanceof ClientListRequest && user != null) {
 			Set<Serializable> set = new HashSet<>();
 			for (Team team : AccessServer.getInstance().getManagerHandler().getTeamManager().getTeamMap().values()) {
@@ -45,7 +95,7 @@ public class ClientConnection implements ReceiveListener {
 			}
 			for (CallDefinition call : AccessServer.getInstance().getManagerHandler().getCallManager().getCallMap().values()) {
 				if (call.testMember(user)) {
-					set.add(new CallData(call));
+					set.add(new CallDefData(call));
 				}
 			}
 			Serializable[] array = new Serializable[set.size()];
@@ -68,7 +118,7 @@ public class ClientConnection implements ReceiveListener {
 				UUID uuid = (UUID) v;
 				CallDefinition call = AccessServer.getInstance().getManagerHandler().getCallManager().getCall(uuid);
 				if (call != null) {
-					set.add(new CallData(call));
+					set.add(new CallDefData(call));
 				}
 			}
 			for (Serializable v : request.teams()) {
@@ -85,32 +135,44 @@ public class ClientConnection implements ReceiveListener {
 			}
 			connection.send(new ListData(array));
 		}
+		if (data.getData() instanceof RequestAllUser) {
+			Serializable[] array = new Serializable[AccessServer.getInstance().getManagerHandler().getUserManager().getUserMap().size()];
+			int i = 0;
+			for (User user : AccessServer.getInstance().getManagerHandler().getUserManager().getUserMap().values()) {
+				array[i++] = new UserData(user);
+			}
+			connection.send(new ListData(array));
+		}
 		if (data.getData() instanceof TeamData teamData) {
 			System.out.println(teamData);
 			AccessServer.getInstance().rootConnection.send(teamData);
 		}
-		if (data.getData() instanceof AuthenticationData authenticationData) {
-			try {
-				Account account = AccessServer.getInstance().getManagerHandler().getAccountManager().getAccount(
-						authenticationData.username());
-				if (account == null) {
-					connection.send(new AuthenticationResult(-2, null));
-					return;
-				}
-				boolean flag = account.test(authenticationData.passphrase(), authenticationData.time());
-				if (flag) {
-					connection.send(new AuthenticationResult(1, account.getUuid()));
-					user = account.getUuid();
-				}
-				else
-					connection.send(new AuthenticationResult(0, null));
-			} catch (NullPointerException e) {
-				connection.send(new AuthenticationResult(-2, null));
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-				connection.send(new AuthenticationResult(-1, null));
+		if (data.getData() instanceof CallDefData callDefData) {
+			System.out.println(callDefData);
+			AccessServer.getInstance().rootConnection.send(callDefData);
+		}
+		if (data.getData() instanceof CallRequest callRequest) {
+			System.out.println(callRequest);
+			if (AccessServer.getInstance().getManagerHandler().getCallManager().getCall(callRequest.uuid()).testMember(
+					user)) {
+				AccessServer.getInstance().rootConnection.send(callRequest);
+				if (!AccessServer.getInstance().callRequestMap.containsKey(callRequest.uuid()))
+					AccessServer.getInstance().callRequestMap.put(callRequest.uuid(), new ConcurrentLinkedQueue<>());
+				AccessServer.getInstance().callRequestMap.get(callRequest.uuid()).add(user);
 			}
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return "ClientConnection{ connection=" + connection + ", user=" + user + " }";
+	}
+	
+	@Override
+	public void onDisconnect() {
+		AccessServer.getInstance().preConnections.remove(this);
+		if (user != null)
+			AccessServer.getInstance().clientConnections.remove(user);
 	}
 	
 }

@@ -10,7 +10,7 @@ import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.base.ListData;
-import com.unleqitq.videocall.transferclasses.base.data.CallData;
+import com.unleqitq.videocall.transferclasses.base.data.CallDefData;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 import com.unleqitq.videocall.transferclasses.base.data.UserData;
 import org.apache.commons.codec.digest.MessageDigestAlgorithms;
@@ -22,6 +22,7 @@ import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RootServer {
 	
@@ -40,7 +41,7 @@ public class RootServer {
 	@NotNull
 	private final Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
 	@NotNull
-	private final Set<CallConnection> callConnections = Collections.synchronizedSet(new HashSet<>());
+	private final Map<UUID, CallConnection> callConnections = new ConcurrentHashMap<>();
 	@NotNull
 	private final Set<AccessConnection> accessConnections = Collections.synchronizedSet(new HashSet<>());
 	@NotNull
@@ -51,6 +52,9 @@ public class RootServer {
 			(c1, c2) -> (int) (c1.freeMemory - c2.freeMemory));
 	@NotNull
 	private final Thread thread;
+	
+	@NotNull
+	public final Map<UUID, UUID> callServerMap = new ConcurrentHashMap<>();
 	
 	public RootServer() throws IOException, NoSuchAlgorithmException {
 		instance = this;
@@ -238,8 +242,12 @@ public class RootServer {
 	
 	public void addCall(@NotNull BaseConnection baseConnection) {
 		baseConnections.remove(baseConnection);
-		CallConnection callConnection = new CallConnection(baseConnection.connection, this);
-		callConnections.add(callConnection);
+		UUID uuid;
+		do {
+			uuid = UUID.randomUUID();
+		} while (callConnections.containsKey(uuid));
+		CallConnection callConnection = new CallConnection(uuid, baseConnection.connection, this);
+		callConnections.put(uuid, callConnection);
 		callQueue.add(callConnection);
 	}
 	
@@ -306,10 +314,10 @@ public class RootServer {
 	
 	public void broadcastCall(@NotNull CallDefinition call) {
 		for (CallConnection callConnection : callQueue) {
-			callConnection.connection.send(new CallData(call));
+			callConnection.connection.send(new CallDefData(call));
 		}
 		for (AccessConnection accessConnection : accessQueue) {
-			accessConnection.connection.send(new CallData(call));
+			accessConnection.connection.send(new CallDefData(call));
 		}
 	}
 	
@@ -349,7 +357,7 @@ public class RootServer {
 		Serializable[] array = new Serializable[calls.size()];
 		int i = 0;
 		for (CallDefinition call : calls) {
-			array[i++] = new CallData(call);
+			array[i++] = new CallDefData(call);
 		}
 		ListData listData = new ListData(array);
 		
@@ -359,6 +367,25 @@ public class RootServer {
 		for (AccessConnection accessConnection : accessQueue) {
 			accessConnection.connection.send(listData);
 		}
+	}
+	
+	public synchronized UUID allocateServer(UUID callUuid) {
+		if (callServerMap.containsKey(callUuid)) {
+			UUID serverUuid = callServerMap.get(callUuid);
+			if (!callConnections.containsKey(serverUuid) || !callConnections.get(serverUuid).connection.isConnected()) {
+				callConnections.remove(serverUuid);
+				callServerMap.remove(callUuid);
+				return allocateServer(callUuid);
+			}
+			return serverUuid;
+		}
+		UUID serverUuid = callQueue.peek().uuid;
+		callServerMap.put(callUuid, serverUuid);
+		return serverUuid;
+	}
+	
+	public Map<UUID, CallConnection> getCallConnections() {
+		return callConnections;
 	}
 	
 }

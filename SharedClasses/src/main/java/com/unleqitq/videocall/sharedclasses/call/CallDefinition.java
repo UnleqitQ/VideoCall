@@ -17,7 +17,6 @@ public abstract class CallDefinition {
 	
 	@NotNull
 	private final IManagerHandler managerHandler;
-	@NotNull
 	private final UUID uuid;
 	@NotNull
 	private UUID creator;
@@ -27,7 +26,7 @@ public abstract class CallDefinition {
 	private String name;
 	private String description;
 	
-	public CallDefinition(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull UUID creator, long time, String name) {
+	public CallDefinition(@NotNull IManagerHandler managerHandler, UUID uuid, @NotNull UUID creator, long time, String name) {
 		this.managerHandler = managerHandler;
 		this.uuid = uuid;
 		this.creator = creator;
@@ -102,7 +101,7 @@ public abstract class CallDefinition {
 	@NotNull
 	public abstract Set<UUID> getMembers();
 	
-	@NotNull
+	@Nullable
 	public UUID getUuid() {
 		return uuid;
 	}
