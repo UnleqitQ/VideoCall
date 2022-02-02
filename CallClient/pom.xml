@@ -41,7 +41,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.unleqitq.videocall.callclient.ClientLauncher</mainClass>
+                            <mainClass>com.unleqitq.videocall.callclient.CallClient</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

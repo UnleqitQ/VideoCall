@@ -67,7 +67,7 @@
             <groupId>com.unleqitq.videocall</groupId>
             <artifactId>CallClient</artifactId>
             <version>1.0.0</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.dlsc.flexgantt</groupId>
