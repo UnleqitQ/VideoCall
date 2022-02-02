@@ -48,7 +48,7 @@ public class AudioUtils {
 			targetDataLine.close();
 		try {
 			//microphone = AudioSystem.getMixer(mic);
-			targetDataLine = AudioSystem.getTargetDataLine(FORMAT, mic);
+			targetDataLine = AudioSystem.getTargetDataLine(FORMAT);
 			//targetDataLine = (TargetDataLine) microphone.getLine(microphone.getTargetLineInfo());
 			microphoneInfo = mic;
 			targetDataLine.open(FORMAT, 1 << 16);

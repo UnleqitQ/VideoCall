@@ -130,6 +130,7 @@ public class AccessConnection implements ReceiveListener, DisconnectListener {
 	@Override
 	public void onDisconnect() {
 		System.out.println("Disconnected " + port);
+		rootServer.accessQueue.remove(this);
 	}
 	
 }

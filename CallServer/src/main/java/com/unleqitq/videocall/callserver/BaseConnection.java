@@ -8,7 +8,6 @@ import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 public class BaseConnection implements ReceiveListener {
 	
 	public ServerNetworkConnection connection;
-	CallServer rootServer;
 	
 	public BaseConnection(ServerNetworkConnection connection) {
 		this.connection = connection;
@@ -20,7 +19,7 @@ public class BaseConnection implements ReceiveListener {
 		if (data.getData() instanceof ConnectionInformation) {
 			ConnectionInformation info = (ConnectionInformation) data.getData();
 			switch (info.getType()) {
-				case CLIENT -> rootServer.addClient(this);
+				case CLIENT -> CallServer.getInstance().addClient(this);
 			}
 		}
 	}
