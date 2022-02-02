@@ -21,7 +21,7 @@ public class CallClientConnection implements ReceiveListener, DisconnectListener
 	@NotNull
 	public Call call;
 	
-	public CallClientConnection(ServerNetworkConnection connection, UUID user, Call call) {
+	public CallClientConnection(ServerNetworkConnection connection, @NotNull UUID user, @NotNull Call call) {
 		this.connection = connection;
 		this.user = user;
 		this.call = call;
@@ -71,7 +71,7 @@ public class CallClientConnection implements ReceiveListener, DisconnectListener
 				}
 			}
 			CallUserData r = new CallUserData(callUser);
-			call.clientConnections.values().stream().forEach(c -> c.connection.send(r));
+			call.clientConnections.values().forEach(c -> c.connection.send(r));
 		}
 		if (data.getData() instanceof VideoData videoData) {
 			VideoData r = new VideoData(videoData.creation(), videoData.imageData(), user);

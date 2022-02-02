@@ -1,5 +1,8 @@
 package com.unleqitq.videocall.callclient;
 
+import com.github.sarxos.webcam.Webcam;
+import com.unleqitq.videocall.callclient.utils.AudioUtils;
+import com.unleqitq.videocall.callclient.utils.VideoUtils;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.user.CallUser;
@@ -8,15 +11,20 @@ import com.unleqitq.videocall.transferclasses.base.AuthenticationData;
 import com.unleqitq.videocall.transferclasses.base.AuthenticationResult;
 import com.unleqitq.videocall.transferclasses.base.ListData;
 import com.unleqitq.videocall.transferclasses.base.data.CallUserData;
+import com.unleqitq.videocall.transferclasses.call.AudioData;
+import com.unleqitq.videocall.transferclasses.call.RequestCallData;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
 
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Mixer;
 import java.io.*;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,11 +48,26 @@ public class CallClient implements ReceiveListener {
 	int port;
 	
 	@NotNull
+	public UUID callUuid;
+	
+	@NotNull
 	public Thread refreshThread;
 	
-	public CallClient(@NotNull String username, @NotNull String password, @NotNull String host, int port) throws
+	@NotNull
+	public AudioUtils audioUtils;
+	@NotNull
+	public VideoUtils videoUtils;
+	
+	public Thread videoThread;
+	public Thread audioThread;
+	
+	public boolean mute;
+	public boolean video;
+	
+	public CallClient(@NotNull String username, @NotNull String password, @NotNull String host, int port, @NotNull UUID callUuid) throws
 			IOException {
 		instance = this;
+		this.callUuid = callUuid;
 		
 		loadConfig();
 		
@@ -84,7 +107,24 @@ public class CallClient implements ReceiveListener {
 		
 		connection.send(new ConnectionInformation(ConnectionInformation.ClientType.CLIENT));
 		
-		refreshThread.start();
+		audioUtils = new AudioUtils();
+		{
+			List<Mixer.Info> speakers = audioUtils.getSpeakersList();
+			if (speakers.size() > 0)
+				audioUtils.setSpeakersInfo(speakers.get(0));
+		}
+		{
+			List<Mixer.Info> microphones = audioUtils.getMicrophones();
+			if (microphones.size() > 0)
+				audioUtils.setMicrophoneInfo(microphones.get(0));
+		}
+		videoUtils = new VideoUtils();
+		{
+			List<Webcam> webcams = videoUtils.getWebcams();
+			if (webcams.size() > 0)
+				videoUtils.setWebcam(webcams.get(0));
+		}
+		
 		try {
 			Thread.sleep(1000 * 2);
 		} catch (InterruptedException e) {
@@ -95,6 +135,47 @@ public class CallClient implements ReceiveListener {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			System.exit(1);
+		}
+		
+		try {
+			Thread.sleep(1000 * 2);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		connection.send(new RequestCallData(callUuid));
+		audioThread = new Thread(this::loopAudio);
+		audioThread.start();
+	}
+	
+	public void loopVideo() {
+		while (true) {
+			if (video) {
+				videoUtils.webcam.getImage();
+			}
+			try {
+				Thread.sleep(1000 / clamp(configuration.getInt("video.fps"), 1, 50));
+			} catch (InterruptedException ignored) {
+				return;
+			}
+		}
+	}
+	
+	public void loopAudio() {
+		while (true) {
+			while (!mute) {
+				try {
+					AudioData data = audioUtils.read();
+					connection.send(data);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException ignored) {
+				return;
+			}
 		}
 	}
 	
@@ -188,6 +269,13 @@ public class CallClient implements ReceiveListener {
 					userUuid = result.userUuid();
 			}
 		}
+		
+		if (data.getData() instanceof AudioData audioData) {
+			Clip clip = audioUtils.getClip(audioData.user());
+			audioUtils.closeClip(audioUtils.stopClip(clip));
+			audioUtils.openClip(clip, audioData.data(), audioData.offset(), audioData.bufferSize());
+			audioUtils.startClip(clip);
+		}
 	}
 	
 	
@@ -222,6 +310,15 @@ public class CallClient implements ReceiveListener {
 		if (v < min)
 			return min;
 		return v;
+	}
+	
+	public static void main(String[] args) {
+		try {
+			CallClient callClient = new CallClient(args[0], args[1], args[2], Integer.parseInt(args[3]),
+					UUID.fromString(args[4]));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

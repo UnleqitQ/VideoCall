@@ -12,9 +12,13 @@ public class AudioUtils {
 	
 	TargetDataLine targetDataLine;
 	
-	Mixer.Info microphone;
+	Mixer.Info microphoneInfo;
 	
-	Mixer.Info speakers;
+	Mixer.Info speakersInfo;
+	
+	Mixer microphone;
+	
+	Mixer speakers;
 	
 	Map<UUID, Clip> clips = new HashMap<>();
 	
@@ -22,7 +26,18 @@ public class AudioUtils {
 	
 	public static final AudioFormat FORMAT = new AudioFormat(44100, 16, 1, true, false);
 	
-	public void setMicrophone(Mixer.Info mic) {
+	public void setMicrophoneInfo(Mixer.Info mic) {
+		if (microphone != null) {
+			Arrays.stream(microphone.getSourceLines()).forEach(line -> {
+				if (line.isOpen())
+					line.close();
+			});
+			Arrays.stream(microphone.getTargetLines()).forEach(line -> {
+				if (line.isOpen())
+					line.close();
+			});
+			microphone.close();
+		}
 		if (ais != null)
 			try {
 				ais.close();
@@ -32,8 +47,10 @@ public class AudioUtils {
 		if (targetDataLine != null && targetDataLine.isOpen())
 			targetDataLine.close();
 		try {
+			//microphone = AudioSystem.getMixer(mic);
 			targetDataLine = AudioSystem.getTargetDataLine(FORMAT, mic);
-			microphone = mic;
+			//targetDataLine = (TargetDataLine) microphone.getLine(microphone.getTargetLineInfo());
+			microphoneInfo = mic;
 			targetDataLine.open(FORMAT, 1 << 16);
 			targetDataLine.start();
 			ais = new AudioInputStream(targetDataLine);
@@ -42,8 +59,8 @@ public class AudioUtils {
 		}
 	}
 	
-	public void setSpeakers(Mixer.Info speakers) {
-		this.speakers = speakers;
+	public void setSpeakersInfo(Mixer.Info speakersInfo) {
+		this.speakersInfo = speakersInfo;
 		Map<UUID, Clip> clips0 = new HashMap<>(clips);
 		clips.clear();
 		for (Map.Entry<UUID, Clip> entry : clips0.entrySet()) {
@@ -59,7 +76,7 @@ public class AudioUtils {
 	public Clip getClip(UUID uuid) {
 		if (!clips.containsKey(uuid)) {
 			try {
-				clips.put(uuid, AudioSystem.getClip(speakers));
+				clips.put(uuid, AudioSystem.getClip(speakersInfo));
 			} catch (LineUnavailableException e) {
 				e.printStackTrace();
 				return null;
@@ -68,6 +85,9 @@ public class AudioUtils {
 		return clips.get(uuid);
 	}
 	
+	/**
+	 * Open Clip
+	 */
 	@NotNull
 	public Clip openClip(@NotNull Clip clip, byte[] data, int offset, int bufferSize) {
 		try {
@@ -86,6 +106,9 @@ public class AudioUtils {
 		return clip;
 	}
 	
+	/**
+	 * Start Clip
+	 */
 	@NotNull
 	public Clip startClip(@NotNull Clip clip) {
 		if (!clip.isRunning() && clip.isOpen()) {
@@ -112,7 +135,7 @@ public class AudioUtils {
 		return microphones;
 	}
 	
-	public List<Mixer.Info> getSpeakers() {
+	public List<Mixer.Info> getSpeakersList() {
 		List<Mixer.Info> speakers = new ArrayList<>();
 		for (Mixer.Info mixerInfo : AudioSystem.getMixerInfo()) {
 			Mixer mixer = AudioSystem.getMixer(mixerInfo);
@@ -130,7 +153,7 @@ public class AudioUtils {
 				buffer[i] = 0;
 			}
 		}
-		return new AudioData(buffer, 0, bytesRead);
+		return new AudioData(buffer, 0, bytesRead, null);
 	}
 	
 }

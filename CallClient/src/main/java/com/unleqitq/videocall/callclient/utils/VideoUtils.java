@@ -12,7 +12,7 @@ import java.util.List;
 
 public class VideoUtils implements WebcamListener {
 	
-	Webcam webcam;
+	public Webcam webcam;
 	
 	public List<Webcam> getWebcams() {
 		return Webcam.getWebcams();

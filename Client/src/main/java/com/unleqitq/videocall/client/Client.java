@@ -2,6 +2,7 @@ package com.unleqitq.videocall.client;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.unleqitq.videocall.callclient.CallClient;
 import com.unleqitq.videocall.client.gui.MainWindow;
 import com.unleqitq.videocall.client.gui.TrayHandler;
 import com.unleqitq.videocall.client.gui.login.LoginGui;
@@ -339,8 +340,15 @@ public class Client implements ReceiveListener {
 		}
 		if (data.getData() instanceof CallData callData) {
 			CallInformation callInformation = callData.getCall();
-			System.out.println(callInformation);
-			infoG(callInformation.toString());
+			//infoG(callInformation.toString());
+			new Thread(() -> {
+				try {
+					new CallClient(username, password, callInformation.host(), callInformation.port(),
+							callInformation.uuid());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}).start();
 		}
 		if (data.getData() instanceof AuthenticationResult result) {
 			switch (result.result()) {
