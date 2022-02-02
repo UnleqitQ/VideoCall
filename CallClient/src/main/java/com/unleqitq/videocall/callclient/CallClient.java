@@ -66,8 +66,19 @@ public class CallClient implements ReceiveListener {
 	
 	public CallClient(@NotNull String username, @NotNull String password, @NotNull String host, int port, @NotNull UUID callUuid) throws
 			IOException {
+		this(username, password, host, port, callUuid, null);
+	}
+	
+	public CallClient(@NotNull String username, @NotNull String password, @NotNull String host, int port, @NotNull UUID callUuid, UUID userUuid) throws
+			IOException {
 		instance = this;
 		this.callUuid = callUuid;
+		this.userUuid = userUuid;
+		
+		System.setProperty("webcam.debug", "false");
+		System.setProperty("bridj.quiet", "true");
+		
+		
 		
 		loadConfig();
 		
@@ -108,22 +119,7 @@ public class CallClient implements ReceiveListener {
 		connection.send(new ConnectionInformation(ConnectionInformation.ClientType.CLIENT));
 		
 		audioUtils = new AudioUtils();
-		{
-			List<Mixer.Info> speakers = audioUtils.getSpeakersList();
-			if (speakers.size() > 0)
-				audioUtils.setSpeakersInfo(speakers.get(0));
-		}
-		{
-			List<Mixer.Info> microphones = audioUtils.getMicrophones();
-			if (microphones.size() > 0)
-				audioUtils.setMicrophoneInfo(microphones.get(0));
-		}
 		videoUtils = new VideoUtils();
-		{
-			List<Webcam> webcams = videoUtils.getWebcams();
-			if (webcams.size() > 0)
-				videoUtils.setWebcam(webcams.get(0));
-		}
 		
 		try {
 			Thread.sleep(1000 * 2);
@@ -141,6 +137,22 @@ public class CallClient implements ReceiveListener {
 			Thread.sleep(1000 * 2);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+		
+		{
+			Webcam webcam = Webcam.getWebcams().get(1);
+			if (webcam != null)
+				videoUtils.setWebcam(webcam);
+		}
+		{
+			List<Mixer.Info> speakers = audioUtils.getSpeakersList();
+			if (speakers.size() > 0)
+				audioUtils.setSpeakersInfo(speakers.get(0));
+		}
+		{
+			List<Mixer.Info> microphones = audioUtils.getMicrophones();
+			if (microphones.size() > 0)
+				audioUtils.setMicrophoneInfo(microphones.get(0));
 		}
 		
 		connection.send(new RequestCallData(callUuid));

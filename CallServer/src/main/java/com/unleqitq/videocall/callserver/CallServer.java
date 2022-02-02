@@ -6,17 +6,20 @@ import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.Server;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.account.Account;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.Data;
 import com.unleqitq.videocall.transferclasses.base.CallCloseData;
 import com.unleqitq.videocall.transferclasses.base.ListData;
+import com.unleqitq.videocall.transferclasses.base.data.AccountData;
 import com.unleqitq.videocall.transferclasses.base.data.CallDefData;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 import com.unleqitq.videocall.transferclasses.base.data.UserData;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import com.unleqitq.videocall.transferclasses.connection.MachineInformation;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
@@ -200,6 +203,14 @@ public class CallServer implements ReceiveListener {
 					CallDefinition call = ((CallDefData) d0).getCall(managerHandler);
 					managerHandler.getCallManager().addCall(call);
 					System.out.println(call);
+				}
+				if (d0 instanceof AccountData) {
+					try {
+						Account account = ((AccountData) d0).getAccount(managerHandler);
+						managerHandler.getAccountManager().addAccount(account);
+					} catch (DecoderException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}

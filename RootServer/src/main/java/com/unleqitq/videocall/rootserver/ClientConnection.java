@@ -1,5 +1,6 @@
 package com.unleqitq.videocall.rootserver;
 
+import com.unleqitq.videocall.sharedclasses.DisconnectListener;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.account.Account;
@@ -11,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.security.NoSuchAlgorithmException;
 
-public class ClientConnection implements ReceiveListener {
+public class ClientConnection implements ReceiveListener, DisconnectListener {
 	
 	public ServerNetworkConnection connection;
 	RootServer rootServer;
@@ -19,6 +20,7 @@ public class ClientConnection implements ReceiveListener {
 	public ClientConnection(@NotNull ServerNetworkConnection connection, RootServer rootServer) {
 		this.connection = connection;
 		connection.setReceiveListener(this);
+		connection.setDisconnectListener(this);
 		this.rootServer = rootServer;
 		
 		System.out.println("Established Client Connection: " + connection.getSocket());
@@ -57,6 +59,12 @@ public class ClientConnection implements ReceiveListener {
 				connection.send(new AuthenticationResult(-1, null));
 			}
 		}
+	}
+	
+	@Override
+	public void onDisconnect() {
+		System.out.println("Disconnected " + connection.getSocket());
+		rootServer.clientConnections.remove(this);
 	}
 	
 }

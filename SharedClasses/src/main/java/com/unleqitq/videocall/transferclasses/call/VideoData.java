@@ -22,7 +22,7 @@ public record VideoData(long creation, byte[] imageData, UUID user) implements S
 	@NotNull
 	public static VideoData create(@NotNull RenderedImage image, @NotNull UUID user) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ImageIO.write(image, "png", baos);
+		ImageIO.write(image, "jpg", baos);
 		return new VideoData(System.currentTimeMillis(), baos.toByteArray(), user);
 	}
 	

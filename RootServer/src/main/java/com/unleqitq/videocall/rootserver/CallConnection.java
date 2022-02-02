@@ -62,7 +62,7 @@ public class CallConnection implements ReceiveListener, DisconnectListener {
 				rootServer.getManagerHandler().getTeamManager().getTeamMap().values());
 		Collection<Account> accounts = Collections.unmodifiableCollection(
 				rootServer.getManagerHandler().getAccountManager().getAccountMap().values());
-		Serializable[] array = new Serializable[calls.size() + users.size() + teams.size()];
+		Serializable[] array = new Serializable[calls.size() + users.size() + teams.size() + accounts.size()];
 		
 		int i = 0;
 		for (CallDefinition call : calls) {
@@ -85,7 +85,12 @@ public class CallConnection implements ReceiveListener, DisconnectListener {
 	@Override
 	public void onDisconnect() {
 		System.out.println("Disconnected " + port);
-		rootServer.callServerMap.remove(uuid);
+		rootServer.callServerMap.forEach((k, v) -> {
+			if (v.equals(uuid))
+				rootServer.callServerMap.remove(k);
+		});
+		rootServer.callQueue.remove(this);
+		rootServer.callConnections.remove(uuid);
 	}
 	
 }

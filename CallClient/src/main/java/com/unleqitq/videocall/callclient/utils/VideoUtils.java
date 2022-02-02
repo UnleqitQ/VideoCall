@@ -27,9 +27,9 @@ public class VideoUtils implements WebcamListener {
 		if (this.webcam != null && this.webcam.getDevice().isOpen())
 			this.webcam.getDevice().close();
 		this.webcam = webcam;
-		webcam.getDevice().open();
+		//webcam.getDevice().open();
 		webcam.addWebcamListener(this);
-		webcam.open(true);
+		webcam.open(false);
 	}
 	
 	@Override
@@ -50,9 +50,11 @@ public class VideoUtils implements WebcamListener {
 	@Override
 	public void webcamImageObtained(WebcamEvent we) {
 		try {
+			if (we.getImage() == null || !CallClient.getInstance().video)
+				return;
 			CallClient.getInstance().connection.send(
 					VideoData.create(we.getImage(), CallClient.getInstance().userUuid));
-		} catch (IOException e) {
+		} catch (IOException | NullPointerException | IllegalArgumentException e) {
 			e.printStackTrace();
 		}
 	}

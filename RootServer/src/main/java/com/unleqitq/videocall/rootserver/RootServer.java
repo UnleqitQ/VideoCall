@@ -37,13 +37,13 @@ public class RootServer {
 	@NotNull
 	private final Server server;
 	@NotNull
-	private final Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());
+	public final Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());
 	@NotNull
-	private final Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
+	public final Set<ClientConnection> clientConnections = Collections.synchronizedSet(new HashSet<>());
 	@NotNull
-	private final Map<UUID, CallConnection> callConnections = new ConcurrentHashMap<>();
+	public final Map<UUID, CallConnection> callConnections = new ConcurrentHashMap<>();
 	@NotNull
-	private final Set<AccessConnection> accessConnections = Collections.synchronizedSet(new HashSet<>());
+	public final Set<AccessConnection> accessConnections = Collections.synchronizedSet(new HashSet<>());
 	@NotNull
 	public PriorityQueue<CallConnection> callQueue = new PriorityQueue<>(
 			(c1, c2) -> (int) (c1.freeMemory - c2.freeMemory));

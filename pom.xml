@@ -335,7 +335,7 @@
             <artifactId>swing-extensions</artifactId>
             <version>1.4.0</version>
         </dependency-->
-        <dependency>
+        <!--dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.32</version>
@@ -346,7 +346,7 @@
             <artifactId>jul-to-slf4j</artifactId>
             <version>2.0.0-alpha6</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency-->
     </dependencies>
 
 </project>
