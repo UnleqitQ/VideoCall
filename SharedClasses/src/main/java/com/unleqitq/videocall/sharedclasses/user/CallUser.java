@@ -24,12 +24,14 @@ public class CallUser implements Serializable {
 	public boolean muted = true;
 	public boolean handRaised;
 	public boolean video;
+	public CallUserPermission permission;
 	
-	public CallUser(@NotNull UUID uuid, @NotNull String firstname, @NotNull String lastname, @NotNull String username) {
+	public CallUser(@NotNull UUID uuid, @NotNull String firstname, @NotNull String lastname, @NotNull String username, CallUserPermission permission) {
 		this.uuid = uuid;
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.username = username;
+		this.permission = permission;
 	}
 	
 	@NotNull
@@ -82,7 +84,8 @@ public class CallUser implements Serializable {
 	public static CallUser load(@NotNull JsonObject section) {
 		CallUser callUser = new CallUser(UUID.fromString(section.get("uuid").getAsString()),
 				section.get("firstname").getAsString(), section.get("lastname").getAsString(),
-				section.get("username").getAsString());
+				section.get("username").getAsString(),
+				CallUserPermission.load(section.get("permission").getAsJsonObject()));
 		callUser.muted = section.get("muted").getAsBoolean();
 		callUser.video = section.get("video").getAsBoolean();
 		callUser.handRaised = section.get("handRaised").getAsBoolean();
@@ -99,6 +102,7 @@ public class CallUser implements Serializable {
 		object.add("muted", new JsonPrimitive(muted));
 		object.add("video", new JsonPrimitive(video));
 		object.add("handRaised", new JsonPrimitive(handRaised));
+		object.add("permission", permission.save());
 		return object;
 	}
 	

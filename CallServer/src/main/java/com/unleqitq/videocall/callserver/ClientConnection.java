@@ -1,24 +1,32 @@
 package com.unleqitq.videocall.callserver;
 
+import com.unleqitq.videocall.callserver.call.Call;
+import com.unleqitq.videocall.callserver.call.CallClientConnection;
+import com.unleqitq.videocall.sharedclasses.DisconnectListener;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.account.Account;
 import com.unleqitq.videocall.transferclasses.Data;
 import com.unleqitq.videocall.transferclasses.base.AuthenticationData;
 import com.unleqitq.videocall.transferclasses.base.AuthenticationResult;
+import com.unleqitq.videocall.transferclasses.call.RequestCallData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
-public class ClientConnection implements ReceiveListener {
+public class ClientConnection implements ReceiveListener, DisconnectListener {
 	
 	public ServerNetworkConnection connection;
-	CallServer callServer;
+	@Nullable
+	public UUID user;
 	
-	public ClientConnection(@NotNull ServerNetworkConnection connection, CallServer callServer) {
+	public ClientConnection(@NotNull ServerNetworkConnection connection) {
 		this.connection = connection;
 		connection.setReceiveListener(this);
-		this.callServer = callServer;
+		connection.setDisconnectListener(this);
 		
 		System.out.println("Established Client Connection: " + connection.getSocket());
 		
@@ -28,15 +36,38 @@ public class ClientConnection implements ReceiveListener {
 	public void onReceive(Data data) {
 		if (data.getData() instanceof AuthenticationData authenticationData) {
 			try {
-				Account account = callServer.getManagerHandler().getAccountManager().getAccount(
+				Account account = CallServer.getInstance().getManagerHandler().getAccountManager().getAccount(
 						authenticationData.username());
 				if (account == null) {
 					connection.send(new AuthenticationResult(-2, null));
 					return;
 				}
 				boolean flag = account.test(authenticationData.passphrase(), authenticationData.time());
-				if (flag)
+				if (flag) {
 					connection.send(new AuthenticationResult(1, account.getUuid()));
+					user = account.getUuid();
+					CallServer.getInstance().preConnections.remove(this);
+					if (CallServer.getInstance().clientConnections.containsKey(user)) {
+						ClientConnection existing = CallServer.getInstance().clientConnections.get(user);
+						System.out.println("User already Logged In");
+						System.out.println("New Connection: " + connection);
+						System.out.println("Preexisting Connection: " + existing.connection);
+						CallServer.getInstance().clientConnections.remove(user);
+						connection.getReceiveThread().interrupt();
+						CallServer.getInstance().clientConnections.get(user).connection.getReceiveThread().interrupt();
+						try {
+							connection.getSocket().close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						try {
+							existing.connection.getSocket().close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					CallServer.getInstance().clientConnections.put(user, this);
+				}
 				else
 					connection.send(new AuthenticationResult(0, null));
 			} catch (NullPointerException e) {
@@ -46,6 +77,33 @@ public class ClientConnection implements ReceiveListener {
 				connection.send(new AuthenticationResult(-1, null));
 			}
 		}
+		if (user == null)
+			return;
+		if (data.getData() instanceof RequestCallData requestCallData) {
+			Call call = CallServer.getInstance().getCall(requestCallData.call());
+			if (!call.callUsers.containsKey(user)) {
+				try {
+					connection.getSocket().close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return;
+			}
+			call.clientConnections.put(user, new CallClientConnection(connection, user, call));
+			CallServer.getInstance().clientConnections.remove(user);
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return "ClientConnection{ connection=" + connection + ", user=" + user + " }";
+	}
+	
+	@Override
+	public void onDisconnect() {
+		CallServer.getInstance().preConnections.remove(this);
+		if (user != null)
+			CallServer.getInstance().clientConnections.remove(user);
 	}
 	
 }

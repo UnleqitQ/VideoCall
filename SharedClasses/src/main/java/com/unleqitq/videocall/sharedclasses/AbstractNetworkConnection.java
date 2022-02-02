@@ -139,6 +139,7 @@ public abstract class AbstractNetworkConnection {
 		} catch (SocketException | EOFException | StreamCorruptedException | OptionalDataException | ClassCastException e) {
 			System.out.println("Connection is reset");
 			connected = false;
+			disconnectListener.onDisconnect();
 		} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}

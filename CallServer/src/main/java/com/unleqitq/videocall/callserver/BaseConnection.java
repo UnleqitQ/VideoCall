@@ -10,10 +10,9 @@ public class BaseConnection implements ReceiveListener {
 	public ServerNetworkConnection connection;
 	CallServer rootServer;
 	
-	public BaseConnection(ServerNetworkConnection connection, CallServer rootServer) {
+	public BaseConnection(ServerNetworkConnection connection) {
 		this.connection = connection;
 		connection.setReceiveListener(this);
-		this.rootServer = rootServer;
 	}
 	
 	@Override
