@@ -29,7 +29,7 @@ public class VideoUtils implements WebcamListener {
 		this.webcam = webcam;
 		//webcam.getDevice().open();
 		webcam.addWebcamListener(this);
-		webcam.open(false);
+		webcam.open(true);
 	}
 	
 	@Override
