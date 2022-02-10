@@ -1,5 +1,7 @@
 package com.unleqitq.videocall.callclient;
 
+import com.unleqitq.videocall.callclient.gui.MainWindow;
+import com.unleqitq.videocall.callclient.gui.video.VideoPanels;
 import com.unleqitq.videocall.callclient.utils.AudioUtils;
 import com.unleqitq.videocall.callclient.utils.VideoUtils;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
@@ -12,6 +14,7 @@ import com.unleqitq.videocall.transferclasses.base.ListData;
 import com.unleqitq.videocall.transferclasses.base.data.CallUserData;
 import com.unleqitq.videocall.transferclasses.call.AudioData;
 import com.unleqitq.videocall.transferclasses.call.RequestCallData;
+import com.unleqitq.videocall.transferclasses.call.UserLeaveData;
 import com.unleqitq.videocall.transferclasses.call.VideoData;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import org.apache.commons.configuration2.YAMLConfiguration;
@@ -20,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.Mixer;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.Socket;
@@ -36,6 +40,8 @@ public class CallClient implements ReceiveListener {
 	
 	YAMLConfiguration configuration = new YAMLConfiguration();
 	public ClientNetworkConnection connection;
+	
+	public MainWindow mainWindow;
 	
 	@NotNull
 	private final String username;
@@ -62,8 +68,13 @@ public class CallClient implements ReceiveListener {
 	public Thread videoThread;
 	public Thread audioThread;
 	
+	public BufferedImage icon;
+	
 	public boolean mute;
 	public boolean video;
+	
+	@NotNull
+	public static ThreadGroup threadGroup = new ThreadGroup("Client");
 	
 	public CallClient(@NotNull String username, @NotNull String password, @NotNull String host, int port, @NotNull UUID callUuid) throws
 			IOException {
@@ -72,12 +83,25 @@ public class CallClient implements ReceiveListener {
 	
 	public CallClient(@NotNull String username, @NotNull String password, @NotNull String host, int port, @NotNull UUID callUuid, UUID userUuid) throws
 			IOException {
+		System.out.println("Call Client PID: " + ProcessHandle.current().pid());
 		instance = this;
 		this.callUuid = callUuid;
 		this.userUuid = userUuid;
 		
 		System.setProperty("webcam.debug", "false");
 		System.setProperty("bridj.quiet", "true");
+		
+		icon = new BufferedImage(16, 16, BufferedImage.TYPE_3BYTE_BGR);
+		
+		{
+			Graphics2D g = icon.createGraphics();
+			g.setColor(Color.BLACK);
+			g.drawLine(0, 0, 128, 128);
+			g.setColor(Color.RED);
+			g.drawLine(0, 16, 16, 0);
+			g.setStroke(new BasicStroke(2));
+			g.dispose();
+		}
 		
 		
 		loadConfig();
@@ -120,6 +144,8 @@ public class CallClient implements ReceiveListener {
 		
 		audioUtils = new AudioUtils();
 		videoUtils = new VideoUtils();
+		
+		mainWindow = new MainWindow();
 		
 		try {
 			Thread.sleep(1000 * 2);
@@ -262,6 +288,7 @@ public class CallClient implements ReceiveListener {
 				if (d0 instanceof CallUserData) {
 					CallUser user = ((CallUserData) d0).getUser();
 					users.put(user.getUuid(), user);
+					VideoPanels.instance.addPanel(user.getUuid());
 					System.out.println(user);
 				}
 			}
@@ -281,12 +308,28 @@ public class CallClient implements ReceiveListener {
 					userUuid = result.userUuid();
 			}
 		}
+		if (data.getData() instanceof CallUserData) {
+			CallUser user = ((CallUserData) data.getData()).getUser();
+			users.put(user.getUuid(), user);
+			VideoPanels.instance.addPanel(user.getUuid());
+			System.out.println(user);
+		}
+		if (data.getData() instanceof UserLeaveData leaveData) {
+			VideoPanels.instance.removePanel(leaveData.uuid());
+		}
 		
 		if (data.getData() instanceof AudioData audioData) {
 			Clip clip = audioUtils.getClip(audioData.user());
 			audioUtils.closeClip(audioUtils.stopClip(clip));
 			audioUtils.openClip(clip, audioData.data(), audioData.offset(), audioData.bufferSize());
 			audioUtils.startClip(clip);
+		}
+		if (data.getData() instanceof VideoData videoData) {
+			try {
+				VideoPanels.instance.receiveVideo(videoData);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

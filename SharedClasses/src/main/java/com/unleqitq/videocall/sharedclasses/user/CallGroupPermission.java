@@ -2,6 +2,7 @@ package com.unleqitq.videocall.sharedclasses.user;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -58,10 +59,12 @@ public class CallGroupPermission implements Serializable {
 		json.add("ban", new JsonPrimitive(ban));
 		json.add("shareScreen", new JsonPrimitive(shareScreen));
 		json.add("name", new JsonPrimitive(name));
+		json.add("level", new JsonPrimitive(level));
 		return json;
 	}
 	
-	public static CallGroupPermission load(JsonObject json) {
+	@NotNull
+	public static CallGroupPermission load(@NotNull JsonObject json) {
 		CallGroupPermission callGroupPermission = new CallGroupPermission(json.get("level").getAsInt());
 		callGroupPermission.ban = json.get("ban").getAsBoolean();
 		callGroupPermission.kick = json.get("kick").getAsBoolean();

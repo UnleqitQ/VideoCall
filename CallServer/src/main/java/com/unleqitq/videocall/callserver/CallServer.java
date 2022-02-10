@@ -50,6 +50,7 @@ public class CallServer implements ReceiveListener {
 	long lastInfo = System.currentTimeMillis();
 	
 	public CallServer() throws IOException, NoSuchAlgorithmException {
+		System.out.println("Call Server PID: " + ProcessHandle.current().pid());
 		instance = this;
 		
 		loadConfig();

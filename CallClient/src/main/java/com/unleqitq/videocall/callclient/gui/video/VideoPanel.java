@@ -38,6 +38,8 @@ public class VideoPanel {
 			canvas = smallCanvas;
 		else
 			canvas = bigCanvas;
+		if (canvas.getBufferStrategy() == null)
+			canvas.createBufferStrategy(2);
 		Graphics2D g = (Graphics2D) canvas.getBufferStrategy().getDrawGraphics();
 		g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		if (image != null) {

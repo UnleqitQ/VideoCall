@@ -30,7 +30,7 @@ public class CallClientConnection implements ReceiveListener, DisconnectListener
 	}
 	
 	public CallUser getCallUser() {
-		return call.callUsers.get(user);
+		return call.getCallUser(user);
 	}
 	
 	@Override

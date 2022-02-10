@@ -2,6 +2,7 @@ package com.unleqitq.videocall.sharedclasses.user;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;
 
@@ -53,9 +54,10 @@ public class CallUserPermission extends CallGroupPermission {
 		return json;
 	}
 	
-	public static CallUserPermission load(JsonObject json) {
+	@NotNull
+	public static CallUserPermission load(@NotNull JsonObject json) {
 		CallUserPermission callUserPermission = new CallUserPermission(json.get("level").getAsInt(),
-				load(json.get("group").getAsJsonObject()));
+				CallGroupPermission.load(json.get("group").getAsJsonObject()));
 		callUserPermission.ban = json.get("ban").getAsBoolean();
 		callUserPermission.kick = json.get("kick").getAsBoolean();
 		callUserPermission.muteOthers = json.get("muteOthers").getAsBoolean();

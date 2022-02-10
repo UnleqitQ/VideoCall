@@ -90,6 +90,7 @@ public class ClientConnection implements ReceiveListener, DisconnectListener {
 				return;
 			}
 			call.clientConnections.put(user, new CallClientConnection(connection, user, call));
+			call.addUser(user);
 			CallServer.getInstance().clientConnections.remove(user);
 		}
 	}

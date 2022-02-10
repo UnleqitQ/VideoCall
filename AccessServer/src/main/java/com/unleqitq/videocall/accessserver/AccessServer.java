@@ -49,6 +49,7 @@ public class AccessServer implements ReceiveListener {
 	ClientNetworkConnection rootConnection;
 	
 	public AccessServer() throws IOException, NoSuchAlgorithmException {
+		System.out.println("Access Server PID: " + ProcessHandle.current().pid());
 		instance = this;
 		
 		loadConfig();

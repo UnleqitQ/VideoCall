@@ -57,6 +57,7 @@ public class RootServer {
 	public final Map<UUID, UUID> callServerMap = new ConcurrentHashMap<>();
 	
 	public RootServer() throws IOException, NoSuchAlgorithmException {
+		System.out.println("Root Server PID: " + ProcessHandle.current().pid());
 		instance = this;
 		
 		loadConfig();

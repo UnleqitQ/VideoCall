@@ -6,8 +6,10 @@ import com.unleqitq.videocall.sharedclasses.user.CallGroupPermission;
 import com.unleqitq.videocall.sharedclasses.user.CallUser;
 import com.unleqitq.videocall.sharedclasses.user.CallUserPermission;
 import com.unleqitq.videocall.sharedclasses.user.User;
+import com.unleqitq.videocall.transferclasses.base.data.CallUserData;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -50,6 +52,31 @@ public class Call {
 		else {
 			lastCheck = System.currentTimeMillis();
 			return false;
+		}
+	}
+	
+	public CallUser getCallUser(UUID userUuid) {
+		if (!callUsers.containsKey(userUuid)) {
+			User user = CallServer.getInstance().getManagerHandler().getUserManager().getUser(userUuid);
+			CallUser callUser = new CallUser(userUuid, user.getFirstname(), user.getLastname(), user.getUsername(),
+					getCallDefinition().getCreator().equals(uuid) ? new CallUserPermission(10,
+							CallGroupPermission.fullPerms) : new CallUserPermission(0, CallGroupPermission.noPerms));
+			callUsers.put(userUuid, callUser);
+			return callUser;
+		}
+		return callUsers.get(userUuid);
+	}
+	
+	public void addUser(UUID userUuid) {
+		CallUserData callUserData = new CallUserData(getCallUser(userUuid));
+		for (CallClientConnection connection : clientConnections.values()) {
+			connection.connection.send(callUserData);
+		}
+		
+		Serializable[] array = new Serializable[clientConnections.size()];
+		int i = 0;
+		for (UUID userUuid1 : clientConnections.keySet()) {
+			array[i++] = getCallUser(userUuid1);
 		}
 	}
 	
