@@ -1,6 +1,5 @@
 package com.unleqitq.videocall.callclient;
 
-import com.github.sarxos.webcam.Webcam;
 import com.unleqitq.videocall.callclient.utils.AudioUtils;
 import com.unleqitq.videocall.callclient.utils.VideoUtils;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
@@ -13,6 +12,7 @@ import com.unleqitq.videocall.transferclasses.base.ListData;
 import com.unleqitq.videocall.transferclasses.base.data.CallUserData;
 import com.unleqitq.videocall.transferclasses.call.AudioData;
 import com.unleqitq.videocall.transferclasses.call.RequestCallData;
+import com.unleqitq.videocall.transferclasses.call.VideoData;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.Mixer;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
@@ -77,7 +78,6 @@ public class CallClient implements ReceiveListener {
 		
 		System.setProperty("webcam.debug", "false");
 		System.setProperty("bridj.quiet", "true");
-		
 		
 		
 		loadConfig();
@@ -138,12 +138,6 @@ public class CallClient implements ReceiveListener {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-		{
-			Webcam webcam = Webcam.getWebcams().get(1);
-			if (webcam != null)
-				videoUtils.setWebcam(webcam);
-		}
 		{
 			List<Mixer.Info> speakers = audioUtils.getSpeakersList();
 			if (speakers.size() > 0)
@@ -163,7 +157,13 @@ public class CallClient implements ReceiveListener {
 	public void loopVideo() {
 		while (true) {
 			if (video) {
-				videoUtils.webcam.getImage();
+				try {
+					BufferedImage image = videoUtils.capture();
+					VideoData videoData = VideoData.create(image, userUuid);
+					connection.send(videoData);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 			try {
 				Thread.sleep(1000 / clamp(configuration.getInt("video.fps"), 1, 50));

@@ -75,6 +75,17 @@
             <artifactId>joal</artifactId>
             <version>2.3.2</version>
         </dependency>
+        <!--dependency->
+            <groupId>com.github.sarxos</groupId>
+            <artifactId>webcam-capture</artifactId>
+            <version>0.3.12</version>
+            <scope>compile</scope>
+        </dependency-->
+        <dependency>
+            <groupId>com.github.downgoon</groupId>
+            <artifactId>marvin</artifactId>
+            <version>1.5.5</version>
+        </dependency>
     </dependencies>
 
 
