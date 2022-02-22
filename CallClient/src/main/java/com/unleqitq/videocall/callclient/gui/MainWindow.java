@@ -1,6 +1,7 @@
 package com.unleqitq.videocall.callclient.gui;
 
 import com.unleqitq.videocall.callclient.CallClient;
+import com.unleqitq.videocall.callclient.gui.settings.SettingsPanel;
 import com.unleqitq.videocall.callclient.gui.video.VideoPanels;
 
 import javax.swing.*;
@@ -8,13 +9,18 @@ import java.awt.*;
 
 public class MainWindow {
 	
+	public static MainWindow instance;
+	
 	public JFrame frame;
 	public JPanel panel = new JPanel();
+	ControlBar controlBar;
 	VideoPanels videoPanels;
+	SettingsPanel settingsPanel;
 	
 	Thread updateThread;
 	
 	public MainWindow() {
+		instance = this;
 		frame = new JFrame("VideoCall | Logged in as: " + CallClient.getInstance().getUsername());
 		
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -25,14 +31,19 @@ public class MainWindow {
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		frame.setVisible(true);
 		
 		videoPanels = new VideoPanels();
+		controlBar = new ControlBar();
+		settingsPanel = new SettingsPanel();
 		
 		frame.add(panel);
 		
 		panel.setLayout(new BorderLayout());
 		
 		panel.add(videoPanels.panel, BorderLayout.CENTER);
+		panel.add(controlBar.toolBar, BorderLayout.NORTH);
+		panel.add(settingsPanel.panel, BorderLayout.EAST);
 		
 		frame.setVisible(true);
 		updateThread = new Thread(CallClient.threadGroup, this::updateLoop);
@@ -43,6 +54,8 @@ public class MainWindow {
 	public void updateLoop() {
 		while (!Thread.currentThread().isInterrupted()) {
 			update();
+			if (frame.isActive())
+				frame.setVisible(true);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException ignored) {

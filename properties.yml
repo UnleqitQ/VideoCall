@@ -1,0 +1,15 @@
+refreshInterval: 10
+cacheDuration: 120
+guiUpdateSpeed: 100
+video:
+  maxTimeDifference: 12
+  fps: 10
+audio:
+  duration: 0.5
+network:
+  maxTimeDifference: 4
+  server:
+    root:
+      host: localhost
+      port: 1000
+unknownValuesRequestInterval: 1000

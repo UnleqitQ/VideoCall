@@ -21,8 +21,8 @@ import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
 
-import javax.sound.sampled.Clip;
 import javax.sound.sampled.Mixer;
+import javax.sound.sampled.SourceDataLine;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -67,11 +67,12 @@ public class CallClient implements ReceiveListener {
 	
 	public Thread videoThread;
 	public Thread audioThread;
+	public Thread audioPlayThread;
 	
 	public BufferedImage icon;
 	
-	public boolean mute;
-	public boolean video;
+	public boolean mute = true;
+	public boolean video = false;
 	
 	@NotNull
 	public static ThreadGroup threadGroup = new ThreadGroup("Client");
@@ -166,35 +167,60 @@ public class CallClient implements ReceiveListener {
 		}
 		{
 			List<Mixer.Info> speakers = audioUtils.getSpeakersList();
+			System.out.println(speakers);
 			if (speakers.size() > 0)
-				audioUtils.setSpeakersInfo(speakers.get(0));
+				audioUtils.setSpeakersInfo(speakers.get(1));
 		}
 		{
 			List<Mixer.Info> microphones = audioUtils.getMicrophones();
-			if (microphones.size() > 0)
-				audioUtils.setMicrophoneInfo(microphones.get(0));
+			try {
+				if (microphones.size() > 0)
+					audioUtils.setMicrophoneInfo(microphones.get(1));
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		connection.send(new RequestCallData(callUuid));
 		audioThread = new Thread(this::loopAudio);
 		audioThread.start();
+		videoThread = new Thread(this::loopVideo);
+		videoThread.start();
 	}
 	
 	public void loopVideo() {
 		while (true) {
 			if (video) {
 				try {
-					BufferedImage image = videoUtils.capture();
+					BufferedImage image;
+					if (videoUtils.isConnected()) {
+						BufferedImage image0 = videoUtils.capture();
+						image = new BufferedImage(image0.getWidth(), image0.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+						Graphics2D g = image.createGraphics();
+						g.drawImage(image0, 0, 0, null);
+						g.dispose();
+					}
+					else {
+						image = new BufferedImage(300, 250, BufferedImage.TYPE_3BYTE_BGR);
+						Graphics2D g = image.createGraphics();
+						g.setFont(new Font("", 0, 40));
+						g.setColor(Color.RED);
+						g.fillRect(0, 0, 300, 300);
+						g.setColor(Color.WHITE);
+						g.drawString(username, 40, 210);
+						g.dispose();
+					}
 					VideoData videoData = VideoData.create(image, userUuid);
 					connection.send(videoData);
-				} catch (IOException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 			try {
 				Thread.sleep(1000 / clamp(configuration.getInt("video.fps"), 1, 50));
-			} catch (InterruptedException ignored) {
-				return;
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				//return;
 			}
 		}
 	}
@@ -205,7 +231,7 @@ public class CallClient implements ReceiveListener {
 				try {
 					AudioData data = audioUtils.read();
 					connection.send(data);
-				} catch (IOException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -282,7 +308,6 @@ public class CallClient implements ReceiveListener {
 	
 	@Override
 	public void onReceive(Data data) {
-		System.out.println(data.getData());
 		if (data.getData() instanceof ListData) {
 			for (Serializable d0 : ((ListData) data.getData()).data()) {
 				if (d0 instanceof CallUserData) {
@@ -319,13 +344,22 @@ public class CallClient implements ReceiveListener {
 		}
 		
 		if (data.getData() instanceof AudioData audioData) {
-			Clip clip = audioUtils.getClip(audioData.user());
+			/*Clip clip = audioUtils.getClip(audioData.user());
 			audioUtils.closeClip(audioUtils.stopClip(clip));
 			audioUtils.openClip(clip, audioData.data(), audioData.offset(), audioData.bufferSize());
-			audioUtils.startClip(clip);
+			audioUtils.startClip(clip);*/
+			/*audioUtils.cis.addStream(
+					new ByteArrayInputStream(audioData.data(), audioData.offset(), audioData.bufferSize()));*/
+			SourceDataLine line = audioUtils.getLine(audioData.user());
+			audioUtils.openLine(line);
+			audioUtils.startLine(line);
+			audioUtils.writeLine(line, audioData.data(), audioData.offset(), audioData.bufferSize());
 		}
+		
 		if (data.getData() instanceof VideoData videoData) {
 			try {
+				//VideoPanels.instance.addPanel(videoData.user());
+				//System.out.println(videoData);
 				VideoPanels.instance.receiveVideo(videoData);
 			} catch (IOException e) {
 				e.printStackTrace();

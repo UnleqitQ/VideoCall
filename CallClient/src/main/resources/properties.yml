@@ -13,4 +13,5 @@ audio:
 
 cacheDuration: 120
 refreshInterval: 10
+guiUpdateSpeed: 100
 unknownValuesRequestInterval: 1000

@@ -96,7 +96,7 @@ public abstract class AbstractNetworkConnection {
 		try {
 			objectOutputStream.writeUnshared(data);
 		} catch (SocketException ignored) {
-			System.out.println("Connection reset " + socket.getInetAddress());
+			//System.out.println("Connection reset " + socket.getInetAddress());
 			connected = false;
 			disconnectListener.onDisconnect();
 		} catch (IOException e) {
@@ -124,8 +124,12 @@ public abstract class AbstractNetworkConnection {
 			if (sendData instanceof CryptData) {
 				Data data = CryptoHandler.decrypt((CryptData) sendData, aesKey);
 				//System.out.println("Received " + data);
-				if (data.getDifference() <= maxTimeDifference)
-					receiveListener.onReceive(data);
+				if (data.getDifference() <= maxTimeDifference * 100)
+					try {
+						receiveListener.onReceive(data);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 			}
 			else if (sendData instanceof AESKeyData) {
 				onAES((AESKeyData) sendData);

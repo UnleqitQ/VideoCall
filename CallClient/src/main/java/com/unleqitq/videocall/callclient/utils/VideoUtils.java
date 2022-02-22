@@ -1,68 +1,74 @@
 package com.unleqitq.videocall.callclient.utils;
 
 
-import marvin.image.MarvinImage;
-import marvin.video.MarvinJavaCVAdapter;
-import marvin.video.MarvinVideoInterface;
-import marvin.video.MarvinVideoInterfaceException;
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamDiscoveryEvent;
+import com.github.sarxos.webcam.WebcamDiscoveryListener;
+import com.github.sarxos.webcam.log.WebcamLogConfigurator;
+import com.unleqitq.videocall.callclient.gui.settings.SettingsPanel;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.util.List;
 
-public class VideoUtils {
+public class VideoUtils implements WebcamDiscoveryListener {
 	
-	MarvinVideoInterface videoAdapter;
+	Webcam webcam;
 	
 	private boolean connected;
 	
 	public VideoUtils() {
-		videoAdapter = new MarvinJavaCVAdapter();
-		try {
-			videoAdapter.connect(0);
-			connected = true;
-		} catch (MarvinVideoInterfaceException e) {
-			e.printStackTrace();
-		}
+		String config = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><configuration></configuration>";
+		WebcamLogConfigurator.configure(new ByteArrayInputStream(config.getBytes()));
+		Webcam.addDiscoveryListener(this);
+		webcam = null;
+		Webcam wc = Webcam.getDefault();
+		if (wc != null)
+			connect(wc);
 	}
 	
-	public void connect(int id) {
+	public void connect(Webcam webcam) {
 		try {
 			if (connected)
-				videoAdapter.disconnect();
-			connected = false;
-		} catch (MarvinVideoInterfaceException e) {
-			e.printStackTrace();
-		}
-		try {
-			videoAdapter.connect(id);
+				disconnect();
+			this.webcam = webcam;
+			webcam.open();
 			connected = true;
-		} catch (MarvinVideoInterfaceException e) {
-			e.printStackTrace();
+		} catch (Exception ignored) {
 		}
 	}
 	
 	public void disconnect() {
-		try {
-			if (connected)
-				videoAdapter.disconnect();
-			connected = false;
-		} catch (MarvinVideoInterfaceException e) {
-			e.printStackTrace();
-		}
+		webcam.close();
+		connected = false;
 	}
 	
 	
-	public BufferedImage capture() throws IOException {
-		try {
-			MarvinImage mImage = videoAdapter.getFrame();
-			return mImage.getBufferedImage();
-		} catch (MarvinVideoInterfaceException e) {
-			throw new IOException(e);
-		}
+	public BufferedImage capture() {
+		return webcam.getImage();
 	}
 	
 	public boolean isConnected() {
 		return connected;
+	}
+	
+	
+	@Override
+	public void webcamFound(WebcamDiscoveryEvent event) {
+		if (SettingsPanel.instance != null)
+			SettingsPanel.instance.devicesPanel.updateCams();
+	}
+	
+	public List<Webcam> getWebcams() {
+		return Webcam.getWebcams();
+	}
+	
+	@Override
+	public void webcamGone(WebcamDiscoveryEvent event) {
+		if (SettingsPanel.instance != null)
+			SettingsPanel.instance.devicesPanel.updateCams();
+		if (event.getWebcam() == webcam)
+			disconnect();
 	}
 	
 }

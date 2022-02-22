@@ -1,5 +1,6 @@
 package com.unleqitq.videocall.transferclasses.call;
 
+import javax.sound.sampled.AudioFormat;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;

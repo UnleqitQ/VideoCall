@@ -34,7 +34,6 @@ import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -85,7 +84,7 @@ public class Client implements ReceiveListener {
 	
 	public TrayHandler trayHandler;
 	
-	public Set<Process> processes = new HashSet<>();
+	public Set<JavaProcess> processes = new HashSet<>();
 	
 	public Client(@NotNull String host, int port) throws IOException {
 		System.out.println("Client PID: " + ProcessHandle.current().pid());
@@ -347,13 +346,13 @@ public class Client implements ReceiveListener {
 			//infoG(callInformation.toString());
 			new Thread(() -> {
 				try {
-					//new CallClient(username, password, callInformation.host(), callInformation.port(),
-					//		callInformation.uuid());
-					Process process = JavaProcess.exec(CallClient.class, List.of("-Xmx200m"),
+					new CallClient(username, password, callInformation.host(), callInformation.port(),
+							callInformation.uuid());
+					/*JavaProcess process = JavaProcess.exec(CallClient.class, List.of("-Xmx200m"),
 							List.of(username, password, callInformation.host(),
 									Integer.toString(callInformation.port()), callInformation.uuid().toString()));
 					processes.add(process);
-					System.out.println("Started process with PID=" + process.pid());
+					System.out.println("Started process with PID=" + process.getProcess().pid());*/
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

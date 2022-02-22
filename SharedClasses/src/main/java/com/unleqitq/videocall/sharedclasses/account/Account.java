@@ -49,7 +49,7 @@ public class Account {
 	
 	public boolean test(byte[] input, long time) throws NoSuchAlgorithmException {
 		long diff = System.currentTimeMillis() - time;
-		if (diff < managerHandler.getConfiguration().getLong("maxPasswordDelay", 1000) && diff > 0) {
+		if (diff < 100000 + managerHandler.getConfiguration().getLong("maxPasswordDelay", 1000) && diff > 0) {
 			String pwd = Hex.encodeHexString(password) + (time & ((1 << 13) - 1));
 			MessageDigest md = MessageDigest.getInstance(MessageDigestAlgorithms.SHA_256);
 			md.update(pwd.getBytes());

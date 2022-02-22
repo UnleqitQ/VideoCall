@@ -6,6 +6,7 @@ import com.unleqitq.videocall.sharedclasses.user.CallGroupPermission;
 import com.unleqitq.videocall.sharedclasses.user.CallUser;
 import com.unleqitq.videocall.sharedclasses.user.CallUserPermission;
 import com.unleqitq.videocall.sharedclasses.user.User;
+import com.unleqitq.videocall.transferclasses.base.ListData;
 import com.unleqitq.videocall.transferclasses.base.data.CallUserData;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +29,7 @@ public class Call {
 		CallDefinition callDefinition = getCallDefinition();
 		for (UUID userUuid : callDefinition.getMembers()) {
 			User user = CallServer.getInstance().getManagerHandler().getUserManager().getUser(userUuid);
-			callUsers.put(userUuid, new CallUser(uuid, user.getFirstname(), user.getLastname(), user.getUsername(),
+			callUsers.put(userUuid, new CallUser(userUuid, user.getFirstname(), user.getLastname(), user.getUsername(),
 					userUuid == callDefinition.getCreator() ? new CallUserPermission(10,
 							CallGroupPermission.fullPerms) : new CallUserPermission(0, CallGroupPermission.noPerms)));
 		}
@@ -69,6 +70,7 @@ public class Call {
 	
 	public void addUser(UUID userUuid) {
 		CallUserData callUserData = new CallUserData(getCallUser(userUuid));
+		System.out.println("Sending: " + callUserData);
 		for (CallClientConnection connection : clientConnections.values()) {
 			connection.connection.send(callUserData);
 		}
@@ -78,6 +80,9 @@ public class Call {
 		for (UUID userUuid1 : clientConnections.keySet()) {
 			array[i++] = getCallUser(userUuid1);
 		}
+		ListData listData = new ListData(array);
+		System.out.println("Sending: " + listData);
+		clientConnections.get(userUuid).connection.send(listData);
 	}
 	
 }

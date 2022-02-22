@@ -27,4 +27,9 @@ public class CallUserData implements Serializable {
 		return CallUser.load(JsonParser.parseString(json).getAsJsonObject());
 	}
 	
+	@Override
+	public String toString() {
+		return "CallUserData {" + json + "}";
+	}
+	
 }

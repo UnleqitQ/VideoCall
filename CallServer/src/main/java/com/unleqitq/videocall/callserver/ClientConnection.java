@@ -77,8 +77,10 @@ public class ClientConnection implements ReceiveListener, DisconnectListener {
 				connection.send(new AuthenticationResult(-1, null));
 			}
 		}
-		if (user == null)
+		if (user == null) {
 			return;
+		}
+		System.out.println(data);
 		if (data.getData() instanceof RequestCallData requestCallData) {
 			Call call = CallServer.getInstance().getCall(requestCallData.call());
 			if (!call.callUsers.containsKey(user)) {

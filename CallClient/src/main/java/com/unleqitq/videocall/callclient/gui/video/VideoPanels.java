@@ -30,13 +30,15 @@ public class VideoPanels {
 		videoPanelMap = new HashMap<>();
 		videoPriorityList = new ArrayList<>();
 		
-		panel.add(smallVideoPanels.scrollPane);
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.add(bigVideoPanels.panel);
+		panel.add(smallVideoPanels.scrollPane);
 	}
 	
 	public void addPanel(UUID user) {
 		if (videoPanelMap.containsKey(user))
 			return;
+		System.out.println("Added Panel: " + user);
 		VideoPanel videoPanel = new VideoPanel(user);
 		videoPanelMap.put(user, videoPanel);
 		videoPriorityList.add(user);

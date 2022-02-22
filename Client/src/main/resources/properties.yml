@@ -7,6 +7,7 @@ network:
 
 video:
   maxTimeDifference: 12
+  fps: 10
 audio:
   duration: 0.5
 
