@@ -70,8 +70,11 @@ public class MainWindow {
 	}
 	
 	public void update() {
-		videoPanels.update();
-		controlBar.update();
+		try {
+			videoPanels.update();
+			controlBar.update();
+		} catch (Exception ignored) {
+		}
 	}
 	
 	

@@ -58,6 +58,21 @@ public class VideoPanel {
 				}
 			}
 		});
+		bigCanvas.addMouseListener(new MouseAdapter() {
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getButton() == 1) {
+					resizeOption++;
+					resizeOption %= 5;
+				}
+				if (e.getButton() == 3) {
+					//userSettings.internalFrame.setLocation(e.getX(), e.getY());
+					//userSettings.internalFrame.show();
+					userSettings.popupMenu.show(smallCanvas, e.getX(), e.getY());
+				}
+			}
+		});
 	}
 	
 	public UUID getUuid() {

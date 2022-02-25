@@ -3,6 +3,7 @@ package com.unleqitq.videocall.callclient;
 import com.unleqitq.videocall.callclient.gui.MainWindow;
 import com.unleqitq.videocall.callclient.gui.video.VideoPanels;
 import com.unleqitq.videocall.callclient.utils.AudioUtils;
+import com.unleqitq.videocall.callclient.utils.ScreenUtils;
 import com.unleqitq.videocall.callclient.utils.VideoUtils;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.DisconnectListener;
@@ -13,10 +14,7 @@ import com.unleqitq.videocall.transferclasses.base.AuthenticationData;
 import com.unleqitq.videocall.transferclasses.base.AuthenticationResult;
 import com.unleqitq.videocall.transferclasses.base.ListData;
 import com.unleqitq.videocall.transferclasses.base.data.CallUserData;
-import com.unleqitq.videocall.transferclasses.call.AudioData;
-import com.unleqitq.videocall.transferclasses.call.RequestCallData;
-import com.unleqitq.videocall.transferclasses.call.UserLeaveData;
-import com.unleqitq.videocall.transferclasses.call.VideoData;
+import com.unleqitq.videocall.transferclasses.call.*;
 import com.unleqitq.videocall.transferclasses.connection.ConnectionInformation;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -66,15 +64,18 @@ public class CallClient implements ReceiveListener, DisconnectListener {
 	public AudioUtils audioUtils;
 	@NotNull
 	public VideoUtils videoUtils;
+	@NotNull
+	public ScreenUtils screenUtils;
 	
 	public Thread videoThread;
 	public Thread audioThread;
-	public Thread audioPlayThread;
+	public Thread screenThread;
 	
 	public BufferedImage icon;
 	
 	public boolean mute = true;
 	public boolean video = false;
+	public boolean shareScreen = false;
 	
 	@NotNull
 	public static ThreadGroup threadGroup = new ThreadGroup("Client");
@@ -149,6 +150,7 @@ public class CallClient implements ReceiveListener, DisconnectListener {
 		
 		audioUtils = new AudioUtils();
 		videoUtils = new VideoUtils();
+		screenUtils = new ScreenUtils();
 		
 		mainWindow = new MainWindow();
 		
@@ -190,6 +192,8 @@ public class CallClient implements ReceiveListener, DisconnectListener {
 		audioThread.start();
 		videoThread = new Thread(this::loopVideo);
 		videoThread.start();
+		screenThread = new Thread(this::loopScreen);
+		screenThread.start();
 	}
 	
 	public void loopVideo() {
@@ -222,6 +226,28 @@ public class CallClient implements ReceiveListener, DisconnectListener {
 			}
 			try {
 				Thread.sleep(1000 / clamp(configuration.getInt("video.fps"), 1, 50));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				//return;
+			}
+		}
+	}
+	
+	public void loopScreen() {
+		while (true) {
+			if (shareScreen) {
+				try {
+					BufferedImage image = screenUtils.capture();
+					if (image != null) {
+						ScreenVideoData videoData = ScreenVideoData.create(image, userUuid);
+						connection.send(videoData);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			try {
+				Thread.sleep(1000 / clamp(configuration.getInt("screen.fps"), 1, 50));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 				//return;
@@ -371,6 +397,15 @@ public class CallClient implements ReceiveListener, DisconnectListener {
 		}
 		
 		if (data.getData() instanceof VideoData videoData) {
+			try {
+				//VideoPanels.instance.addPanel(videoData.user());
+				//System.out.println(videoData);
+				VideoPanels.instance.receiveVideo(videoData);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		if (data.getData() instanceof ScreenVideoData videoData) {
 			try {
 				//VideoPanels.instance.addPanel(videoData.user());
 				//System.out.println(videoData);

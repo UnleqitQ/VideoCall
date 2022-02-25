@@ -2,6 +2,7 @@ package com.unleqitq.videocall.callclient.gui.video;
 
 import com.unleqitq.videocall.callclient.CallClient;
 import com.unleqitq.videocall.sharedclasses.user.CallUser;
+import com.unleqitq.videocall.transferclasses.call.ScreenVideoData;
 import com.unleqitq.videocall.transferclasses.call.VideoData;
 
 import javax.swing.*;
@@ -93,6 +94,22 @@ public class VideoPanels {
 					bigVideoPanels.bigVideoPanel.draw(videoData.getImage());
 					return;
 				}
+			}
+		}
+		videoPanelMap.get(videoData.user()).draw(videoData.getImage());
+	}
+	
+	public void receiveVideo(ScreenVideoData videoData) throws IOException {
+		if (focusSingle) {
+			if (focusScreen) {
+				if (videoData.user().equals(focusedUser)) {
+					bigVideoPanels.bigVideoPanel.draw(videoData.getImage());
+					return;
+				}
+			}
+			else {
+				videoPanelMap.get(videoData.user()).draw(videoData.getImage());
+				return;
 			}
 		}
 		videoPanelMap.get(videoData.user()).draw(videoData.getImage());

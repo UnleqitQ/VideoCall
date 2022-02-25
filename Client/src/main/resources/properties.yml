@@ -10,6 +10,8 @@ video:
   fps: 10
 audio:
   duration: 0.5
+screen:
+  fps: 30
 
 cacheDuration: 120
 refreshInterval: 10

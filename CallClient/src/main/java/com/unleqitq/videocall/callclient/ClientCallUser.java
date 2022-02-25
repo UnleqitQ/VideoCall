@@ -1,5 +1,7 @@
 package com.unleqitq.videocall.callclient;
 
+import com.unleqitq.videocall.sharedclasses.user.CallUser;
+
 import java.util.UUID;
 
 public class ClientCallUser {
@@ -15,6 +17,12 @@ public class ClientCallUser {
 	
 	public boolean isConnected() {
 		return connected;
+	}
+	
+	@Override
+	public String toString() {
+		CallUser user = CallClient.getInstance().users.get(uuid);
+		return user.getFirstname() + " " + user.getLastname();
 	}
 	
 }

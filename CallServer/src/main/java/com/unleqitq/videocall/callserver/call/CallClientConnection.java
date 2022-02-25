@@ -82,8 +82,9 @@ public class CallClientConnection implements ReceiveListener, DisconnectListener
 		}
 		if (data.getData() instanceof ScreenVideoData videoData) {
 			ScreenVideoData r = new ScreenVideoData(videoData.creation(), videoData.imageData(), user);
-			call.clientConnections.values().stream()/*.filter(c -> !c.user.equals(user))*/.forEach(
-					c -> c.connection.send(r));
+			if (call.getCallUser(user).permission.shareScreen)
+				call.clientConnections.values().stream()/*.filter(c -> !c.user.equals(user))*/.forEach(
+						c -> c.connection.send(r));
 		}
 		if (data.getData() instanceof AudioData audioData) {
 			System.out.println(audioData);

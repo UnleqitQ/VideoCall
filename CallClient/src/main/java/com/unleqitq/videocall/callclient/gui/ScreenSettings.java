@@ -1,5 +1,6 @@
 package com.unleqitq.videocall.callclient.gui;
 
+import com.unleqitq.videocall.callclient.CallClient;
 import com.unleqitq.videocall.callclient.utils.ScreenUtils;
 
 import javax.swing.*;
@@ -22,7 +23,7 @@ public class ScreenSettings {
 	
 	public ScreenSettings() {
 		internalFrame = new JInternalFrame();
-		internalFrame.setSize(300, 500);
+		internalFrame.setSize(200, 300);
 		internalFrame.setClosable(true);
 		internalFrame.setDefaultCloseOperation(JInternalFrame.HIDE_ON_CLOSE);
 		internalFrame.setMaximizable(false);
@@ -42,7 +43,9 @@ public class ScreenSettings {
 		internalFrame.add(shareButton, gbc);
 		gbc.gridy = 2;
 		internalFrame.add(stopButton, gbc);
-		previewCanvas.setSize(300, 200);
+		previewCanvas.setSize(200, 150);
+		previewCanvas.setPreferredSize(new Dimension(200, 150));
+		previewCanvas.setMaximumSize(new Dimension(200, 150));
 		
 		deviceBox.addMouseListener(new MouseAdapter() {
 			
@@ -65,6 +68,16 @@ public class ScreenSettings {
 				preview = !preview;
 			}
 		});
+		shareButton.addActionListener(e -> {
+			CallClient.getInstance().shareScreen = true;
+			CallClient.getInstance().screenUtils.connect(screenUtils.getDevice());
+			internalFrame.hide();
+		});
+		stopButton.addActionListener(e -> {
+			CallClient.getInstance().shareScreen = true;
+			internalFrame.hide();
+		});
+		updateDevices();
 	}
 	
 	private void updateDevices() {
@@ -73,29 +86,31 @@ public class ScreenSettings {
 	}
 	
 	public void update() {
+		shareButton.setEnabled(
+				CallClient.getInstance().users.get(CallClient.getInstance().userUuid).permission.isShareScreen());
 		if (!internalFrame.isVisible())
 			return;
 		BufferedImage img;
 		if (preview) {
 			img = screenUtils.capture();
 			if (img == null) {
-				img = new BufferedImage(300, 200, BufferedImage.TYPE_BYTE_GRAY);
+				img = new BufferedImage(200, 150, BufferedImage.TYPE_BYTE_GRAY);
 				Graphics2D g = img.createGraphics();
 				g.setColor(Color.BLACK);
-				g.fillRect(0, 0, 300, 200);
+				g.fillRect(0, 0, 200, 150);
 				g.setColor(Color.WHITE);
-				g.drawString("Didn't get Screen", 20, 150);
+				g.drawString("Didn't get Screen", 20, 80);
 			}
 		}
 		else {
-			img = new BufferedImage(300, 200, BufferedImage.TYPE_BYTE_GRAY);
+			img = new BufferedImage(200, 150, BufferedImage.TYPE_BYTE_GRAY);
 			Graphics2D g = img.createGraphics();
 			g.setColor(Color.BLACK);
-			g.fillRect(0, 0, 300, 200);
+			g.fillRect(0, 0, 200, 150);
 			g.setColor(Color.WHITE);
-			g.drawString("Preview Disabled", 20, 150);
+			g.drawString("Preview Disabled", 20, 80);
 		}
-		previewCanvas.getGraphics().drawImage(img, 0, 0, 300, 200, null);
+		previewCanvas.getGraphics().drawImage(img, 0, 0, 200, 150, null);
 	}
 	
 }
