@@ -5,6 +5,9 @@ import com.unleqitq.videocall.callclient.ClientCallUser;
 import com.unleqitq.videocall.callclient.gui.video.VideoPanels;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ControlBar {
 	
@@ -15,11 +18,32 @@ public class ControlBar {
 	public JButton screenButton = new JButton("Share Screen");
 	public JButton layoutButton = new JButton("Layout");
 	public JToggleButton focusScreenButton = new JToggleButton("Focus Screen");
-	public JComboBox<ClientCallUser> focusUserBox = new JComboBox<>();
+	public JComboBox<ClientCallUser> focusUserBox;
 	public ScreenSettings screenSettings = new ScreenSettings();
-	int i = 0;
 	
 	public ControlBar() {
+		focusUserBox = new JComboBox<>() {
+			
+			@Override
+			public void removeAllItems() {
+				MutableComboBoxModel<ClientCallUser> model = (MutableComboBoxModel<ClientCallUser>) dataModel;
+				Set<ClientCallUser> added = new HashSet<>();
+				int size = model.getSize();
+				int k = 0;
+				for (int i = 0; i < size; ++i) {
+					ClientCallUser element = model.getElementAt(k);
+					if (CallClient.getInstance().clientCallUsers.containsKey(element.uuid)) {
+						k++;
+						added.add(element);
+					}
+					else {
+						model.removeElement(element);
+					}
+				}
+				CallClient.getInstance().clientCallUsers.values().stream().filter(c -> !added.contains(c)).forEach(
+						model::addElement);
+			}
+		};
 		toolBar.add(videoButton);
 		toolBar.add(muteButton);
 		toolBar.add(screenButton);
@@ -44,18 +68,21 @@ public class ControlBar {
 		});
 		focusUserBox.addItemListener(
 				e -> VideoPanels.instance.focusedUser = ((ClientCallUser) focusUserBox.getSelectedItem()).uuid);
+		focusUserBox.setMaximumSize(new Dimension(300, 300));
 		focusScreenButton.addActionListener(e -> VideoPanels.instance.focusScreen = focusScreenButton.isSelected());
 		layoutButton.addActionListener(e -> VideoPanels.instance.focusSingle = !VideoPanels.instance.focusSingle);
 	}
 	
+	public void updateUsers() {
+		//ClientCallUser sel = (ClientCallUser) focusUserBox.getSelectedItem();
+		focusUserBox.removeAllItems();
+		//CallClient.getInstance().clientCallUsers.values().forEach(focusUserBox::addItem);
+		//focusUserBox.setSelectedItem(sel);
+	}
+	
 	public void update() {
 		screenSettings.update();
-		if (i % 200 == 100) {
-			focusUserBox.removeAllItems();
-			CallClient.getInstance().clientCallUsers.values().forEach(focusUserBox::addItem);
-		}
-		
-		i++;
+		updateUsers();
 	}
 	
 }

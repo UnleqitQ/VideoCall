@@ -74,7 +74,7 @@ public class ScreenSettings {
 			internalFrame.hide();
 		});
 		stopButton.addActionListener(e -> {
-			CallClient.getInstance().shareScreen = true;
+			CallClient.getInstance().shareScreen = false;
 			internalFrame.hide();
 		});
 		updateDevices();

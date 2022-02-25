@@ -92,6 +92,12 @@
             <artifactId>TarsosDSP</artifactId>
             <version>2.4-1</version>
         </dependency>
+        <dependency>
+            <groupId>com.unleqitq.videocall</groupId>
+            <artifactId>SwingUtils</artifactId>
+            <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 

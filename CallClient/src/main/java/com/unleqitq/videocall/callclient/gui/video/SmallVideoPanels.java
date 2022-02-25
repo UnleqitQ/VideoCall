@@ -1,5 +1,7 @@
 package com.unleqitq.videocall.callclient.gui.video;
 
+import com.unleqitq.videocall.swingutils.QBoxLayout;
+
 import javax.swing.*;
 
 public class SmallVideoPanels {
@@ -10,7 +12,7 @@ public class SmallVideoPanels {
 	public SmallVideoPanels() {
 		scrollPane = new JScrollPane();
 		panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		panel.setLayout(new QBoxLayout(panel, BoxLayout.Y_AXIS, 900));
 		scrollPane.setViewportView(panel);
 	}
 	

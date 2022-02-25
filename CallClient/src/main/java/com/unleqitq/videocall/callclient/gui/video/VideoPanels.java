@@ -83,8 +83,18 @@ public class VideoPanels {
 	public void update() {
 		smallVideoPanels.setVisible(!focusSingle);
 		bigVideoPanels.setVisible(focusSingle);
-		realignPanels();
-		videoPanelMap.values().forEach(VideoPanel::draw);
+		try {
+			realignPanels();
+		} catch (Exception ignored) {
+		}
+		try {
+			videoPanelMap.values().forEach(VideoPanel::draw);
+		} catch (Exception ignored) {
+		}
+		try {
+			bigVideoPanels.bigVideoPanel.draw();
+		} catch (Exception ignored) {
+		}
 	}
 	
 	public void receiveVideo(VideoData videoData) throws IOException {

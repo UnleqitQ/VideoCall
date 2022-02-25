@@ -32,7 +32,7 @@ public class VideoPanel {
 		this.uuid = user;
 		userSettings = new UserSettings(uuid);
 		bigPanel = new JPanel();
-		bigPanel.setPreferredSize(new Dimension(100, 70));
+		bigPanel.setPreferredSize(new Dimension(250, 175));
 		smallPanel = new JPanel();
 		smallPanel.setPreferredSize(new Dimension(500, 500));
 		bigCanvas = new Canvas();
@@ -69,7 +69,7 @@ public class VideoPanel {
 				if (e.getButton() == 3) {
 					//userSettings.internalFrame.setLocation(e.getX(), e.getY());
 					//userSettings.internalFrame.show();
-					userSettings.popupMenu.show(smallCanvas, e.getX(), e.getY());
+					userSettings.popupMenu.show(bigCanvas, e.getX(), e.getY());
 				}
 			}
 		});
@@ -80,72 +80,9 @@ public class VideoPanel {
 	}
 	
 	public void draw(BufferedImage image) {
-		Canvas canvas;
-		canvas = bigCanvas;
-		if (!VideoPanels.instance.focusSingle)
-			canvas = smallCanvas;
-		if (canvas.getBufferStrategy() == null)
-			canvas.createBufferStrategy(2);
-		Graphics2D g = (Graphics2D) canvas.getBufferStrategy().getDrawGraphics();
-		g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-		//System.out.println(image);
-		if (image != null) {
-			lastImageTime = System.currentTimeMillis();
-			lastImage = image;
-			double wc = canvas.getWidth();
-			double hc = canvas.getHeight();
-			double wi = image.getWidth();
-			double hi = image.getHeight();
-			double rw = wc / wi;
-			double rh = hc / hi;
-			double r = 1;
-			switch (resizeOption) {
-				case SIZE_FIT -> {
-					r = Math.min(rw, rh);
-					rw = r;
-					rh = r;
-				}
-				case SIZE_ZOOM -> {
-					r = Math.max(rw, rh);
-					rw = r;
-					rh = r;
-				}
-				case SIZE_MEAN -> {
-					r = (rw + rh) / 2;
-					rw = r;
-					rh = r;
-				}
-				case SIZE_ORIGINAL -> {
-					rw = r;
-					rh = r;
-				}
-			}
-			int w = (int) (wi * rw);
-			int h = (int) (hi * rh);
-			int x = canvas.getWidth() / 2 - w / 2;
-			int y = canvas.getHeight() / 2 - h / 2;
-			//System.out.printf("c(%.2f, %.2f)\ti(%.2f, %.2f)\n", wc, hc, wi, hi);
-			//System.out.printf("r: %.2f\tr(%.2f, %.2f)\ts(%d, %d)\tp(%d, %d)\n", r, rw, rh, w, h, x, y);
-			g.drawImage(image, x, y, w, h, null);
-		}
-		
-		CallUser user = CallClient.getInstance().users.get(uuid);
-		g.setColor(new Color(0, 0, 0, 159));
-		g.fillRect(0, canvas.getHeight() - 30, canvas.getWidth(), 30);
-		g.setColor(Color.WHITE);
-		String resizeString = switch (resizeOption) {
-			case SIZE_FIT -> "fit";
-			case SIZE_ZOOM -> "zoom";
-			case SIZE_MEAN -> "mean";
-			case SIZE_ORIGINAL -> "original";
-			case SIZE_STRETCH -> "stretch";
-			default -> "";
-		};
-		g.drawString(user.firstname + " " + user.lastname + " ".repeat(10) + "(" + resizeString + ")", 5,
-				canvas.getHeight() - 5);
-		
-		g.dispose();
-		canvas.getBufferStrategy().show();
+		lastImage = image;
+		lastImageTime = System.currentTimeMillis();
+		draw();
 	}
 	
 	public void draw() {
@@ -226,8 +163,10 @@ public class VideoPanel {
 			case SIZE_STRETCH -> "stretch";
 			default -> "";
 		};
-		g.drawString(user.firstname + " " + user.lastname + " ".repeat(10) + "(" + resizeString + ")", 5,
-				canvas.getHeight() - 5);
+		g.setFont(new Font("", Font.PLAIN, 12));
+		g.drawString(user.firstname + " " + user.lastname + " ".repeat(
+						canvas == bigCanvas ? 2 : 10) + "(" + resizeString + ")", 5,
+				canvas.getHeight() - (canvas == bigCanvas ? 2 : 5));
 		
 		g.dispose();
 		canvas.getBufferStrategy().show();
