@@ -6,14 +6,17 @@ import javax.swing.*;
 
 public class ControlBar {
 	
-	JToolBar toolBar = new JToolBar("Control", JToolBar.HORIZONTAL);
+	public JToolBar toolBar = new JToolBar("Control", JToolBar.HORIZONTAL);
 	
-	JToggleButton videoButton = new JToggleButton("Video");
-	JToggleButton muteButton = new JToggleButton("Mute");
+	public JToggleButton videoButton = new JToggleButton("Video");
+	public JToggleButton muteButton = new JToggleButton("Mute");
+	public JButton screenButton = new JButton("Share Screen");
+	public ScreenSettings screenSettings = new ScreenSettings();
 	
 	public ControlBar() {
 		toolBar.add(videoButton);
 		toolBar.add(muteButton);
+		toolBar.add(screenButton);
 		videoButton.addActionListener(a -> {
 			CallClient.getInstance().video = videoButton.isSelected();
 			System.out.println("Video: " + videoButton.isSelected());
@@ -24,6 +27,16 @@ public class ControlBar {
 		});
 		videoButton.setSelected(CallClient.getInstance().video);
 		muteButton.setSelected(CallClient.getInstance().mute);
+		screenButton.addActionListener(a -> {
+			screenSettings.internalFrame.setLocation(
+					screenButton.getLocationOnScreen().x - MainWindow.instance.frame.getLayeredPane().getLocationOnScreen().x,
+					screenButton.getLocationOnScreen().y + screenButton.getHeight() - MainWindow.instance.frame.getLayeredPane().getLocationOnScreen().y);
+			screenSettings.internalFrame.show();
+		});
+	}
+	
+	public void update() {
+		screenSettings.update();
 	}
 	
 }

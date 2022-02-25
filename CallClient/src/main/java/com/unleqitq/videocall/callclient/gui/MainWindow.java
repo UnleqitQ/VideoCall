@@ -13,13 +13,18 @@ public class MainWindow {
 	
 	public JFrame frame;
 	public JPanel panel = new JPanel();
-	ControlBar controlBar;
-	VideoPanels videoPanels;
-	SettingsPanel settingsPanel;
+	public ControlBar controlBar;
+	public VideoPanels videoPanels;
+	public SettingsPanel settingsPanel;
 	
 	Thread updateThread;
 	
 	public MainWindow() {
+		/*try {
+			UIManager.setLookAndFeel(new FlatLightLaf());
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}*/
 		instance = this;
 		frame = new JFrame("VideoCall | Logged in as: " + CallClient.getInstance().getUsername());
 		
@@ -57,7 +62,7 @@ public class MainWindow {
 			if (frame.isActive())
 				frame.setVisible(true);
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			} catch (InterruptedException ignored) {
 				return;
 			}
@@ -66,6 +71,7 @@ public class MainWindow {
 	
 	public void update() {
 		videoPanels.update();
+		controlBar.update();
 	}
 	
 	

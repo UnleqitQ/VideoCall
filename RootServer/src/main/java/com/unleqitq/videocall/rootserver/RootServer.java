@@ -10,6 +10,7 @@ import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.team.Team;
 import com.unleqitq.videocall.sharedclasses.user.User;
 import com.unleqitq.videocall.transferclasses.base.ListData;
+import com.unleqitq.videocall.transferclasses.base.data.AccountData;
 import com.unleqitq.videocall.transferclasses.base.data.CallDefData;
 import com.unleqitq.videocall.transferclasses.base.data.TeamData;
 import com.unleqitq.videocall.transferclasses.base.data.UserData;
@@ -123,11 +124,16 @@ public class RootServer {
 		System.out.println(team);
 	}
 	
-	public void createUser(@NotNull String username, byte[] password, @NotNull String firstname, @NotNull String lastname) {
+	public Account createUser(@NotNull String username, byte[] password, @NotNull String firstname, @NotNull String lastname) {
 		Account account = managerHandler.getAccountManager().createAccount(username, password);
 		if (account == null)
-			return;
-		managerHandler.getUserManager().createUser(account.getUuid(), firstname, lastname, username);
+			return null;
+		User user = managerHandler.getUserManager().createUser(account.getUuid(), firstname, lastname, username);
+		accessConnections.forEach(c -> c.connection.send(new UserData(user)));
+		accessConnections.forEach(c -> c.connection.send(new AccountData(account)));
+		callConnections.values().forEach(c -> c.connection.send(new UserData(user)));
+		callConnections.values().forEach(c -> c.connection.send(new AccountData(account)));
+		return account;
 	}
 	
 	public void saveAccounts() {
@@ -239,6 +245,31 @@ public class RootServer {
 	
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 		RootServer rootServer = new RootServer();
+		rootServer.runCommandListener();
+	}
+	
+	private void runCommandListener() {
+		
+		Scanner reader = new Scanner(System.in);
+		while (true) {
+			String v = reader.nextLine();
+			String[] elements = v.split(" ");
+			if (v.length() == 5 && elements[0].equalsIgnoreCase("adduser")) {
+				String username = elements[1];
+				String password = elements[2];
+				String fn = elements[3];
+				String ln = elements[4];
+				MessageDigest md = null;
+				try {
+					md = MessageDigest.getInstance(MessageDigestAlgorithms.SHA_1);
+					md.update(password.getBytes());
+					System.out.println("Created " + createUser(username, md.digest(), fn, ln));
+				} catch (NoSuchAlgorithmException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
 	}
 	
 	public void addCall(@NotNull BaseConnection baseConnection) {

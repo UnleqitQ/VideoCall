@@ -29,6 +29,7 @@ public class ClientLauncher implements ReceiveListener {
 		Socket socket = new Socket(host, port);
 		connection = new ClientNetworkConnection(socket);
 		connection.setReceiveListener(this);
+		connection.setDisconnectListener(() -> System.out.println("disconnected"));
 		connection.init();
 		
 		try {

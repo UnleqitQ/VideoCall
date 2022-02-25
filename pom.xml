@@ -101,7 +101,10 @@
             <id>eugener-oxbow</id>
             <url>https://github.com/eugener/oxbow/tree/master/maven/repository</url>
         </repository>
-
+        <repository>
+            <id>incendo</id>
+            <url>https://repo.incendo.org/content/repositories/snapshots</url>
+        </repository>
     </repositories>
 
 
@@ -340,6 +343,21 @@
             <artifactId>jul-to-slf4j</artifactId>
             <version>2.0.0-alpha6</version>
             <scope>compile</scope>
+        </dependency-->
+        <!--dependency>
+            <groupId>cloud.commandframework</groupId>
+            <artifactId>cloud-core</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>cloud.commandframework</groupId>
+            <artifactId>cloud-annotations</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>cloud.commandframework</groupId>
+            <artifactId>cloud-brigadier</artifactId>
+            <version>1.6.1</version>
         </dependency-->
     </dependencies>
 

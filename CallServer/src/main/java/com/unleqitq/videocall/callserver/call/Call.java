@@ -10,6 +10,7 @@ import com.unleqitq.videocall.transferclasses.base.ListData;
 import com.unleqitq.videocall.transferclasses.base.data.CallUserData;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
@@ -30,7 +31,7 @@ public class Call {
 		for (UUID userUuid : callDefinition.getMembers()) {
 			User user = CallServer.getInstance().getManagerHandler().getUserManager().getUser(userUuid);
 			callUsers.put(userUuid, new CallUser(userUuid, user.getFirstname(), user.getLastname(), user.getUsername(),
-					userUuid == callDefinition.getCreator() ? new CallUserPermission(10,
+					userUuid.equals(callDefinition.getCreator()) ? new CallUserPermission(10,
 							CallGroupPermission.fullPerms) : new CallUserPermission(0, CallGroupPermission.noPerms)));
 		}
 	}
@@ -60,7 +61,7 @@ public class Call {
 		if (!callUsers.containsKey(userUuid)) {
 			User user = CallServer.getInstance().getManagerHandler().getUserManager().getUser(userUuid);
 			CallUser callUser = new CallUser(userUuid, user.getFirstname(), user.getLastname(), user.getUsername(),
-					getCallDefinition().getCreator().equals(uuid) ? new CallUserPermission(10,
+					getCallDefinition().getCreator().equals(userUuid) ? new CallUserPermission(10,
 							CallGroupPermission.fullPerms) : new CallUserPermission(0, CallGroupPermission.noPerms));
 			callUsers.put(userUuid, callUser);
 			return callUser;
@@ -69,6 +70,14 @@ public class Call {
 	}
 	
 	public void addUser(UUID userUuid) {
+		if (!getCallDefinition().testMember(userUuid)) {
+			try {
+				clientConnections.get(userUuid).connection.getSocket().close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
 		CallUserData callUserData = new CallUserData(getCallUser(userUuid));
 		System.out.println("Sending: " + callUserData);
 		for (CallClientConnection connection : clientConnections.values()) {

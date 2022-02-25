@@ -83,6 +83,7 @@ public class VideoPanels {
 		smallVideoPanels.setVisible(!focusSingle);
 		bigVideoPanels.setVisible(focusSingle);
 		realignPanels();
+		videoPanelMap.values().forEach(VideoPanel::draw);
 	}
 	
 	public void receiveVideo(VideoData videoData) throws IOException {

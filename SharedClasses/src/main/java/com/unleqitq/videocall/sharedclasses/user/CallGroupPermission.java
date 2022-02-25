@@ -78,4 +78,9 @@ public class CallGroupPermission implements Serializable {
 	public static final CallGroupPermission fullPerms = new CallGroupPermission(10, "fullPerms", true, true, true,
 			true);
 	
+	@Override
+	public String toString() {
+		return "CallGroupPermission " + save();
+	}
+	
 }

@@ -1,16 +1,17 @@
 package com.unleqitq.videocall.callserver.call;
 
+import com.unleqitq.videocall.callserver.CallServer;
 import com.unleqitq.videocall.sharedclasses.DisconnectListener;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.user.CallUser;
 import com.unleqitq.videocall.transferclasses.Data;
+import com.unleqitq.videocall.transferclasses.base.data.CallDefData;
 import com.unleqitq.videocall.transferclasses.base.data.CallUserData;
-import com.unleqitq.videocall.transferclasses.call.AudioData;
-import com.unleqitq.videocall.transferclasses.call.ScreenVideoData;
-import com.unleqitq.videocall.transferclasses.call.VideoData;
+import com.unleqitq.videocall.transferclasses.call.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.UUID;
 
 public class CallClientConnection implements ReceiveListener, DisconnectListener {
@@ -86,10 +87,35 @@ public class CallClientConnection implements ReceiveListener, DisconnectListener
 		}
 		if (data.getData() instanceof AudioData audioData) {
 			System.out.println(audioData);
-			AudioData r = new AudioData(audioData.data(), audioData.offset(), audioData.bufferSize(),
-					audioData.format(), user);
+			AudioData r = new AudioData(audioData.data(), audioData.offset(), audioData.bufferSize(), user);
 			call.clientConnections.values().stream()/*.filter(c -> !c.user.equals(user))*/.forEach(
 					c -> c.connection.send(r));
+		}
+		if (data.getData() instanceof UserLeaveData userLeaveData) {
+			if (getCallUser().permission.isKick()) {
+				try {
+					call.clientConnections.get(user).connection.getSocket().close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				call.clientConnections.remove(user);
+				call.clientConnections.values().forEach(c -> c.connection.send(userLeaveData));
+			}
+		}
+		if (data.getData() instanceof UserBanData userBanData) {
+			if (getCallUser().permission.isBan()) {
+				try {
+					call.clientConnections.get(user).connection.getSocket().close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				call.clientConnections.remove(user);
+				UserLeaveData userLeaveData = new UserLeaveData(userBanData.uuid());
+				call.clientConnections.values().forEach(c -> c.connection.send(userLeaveData));
+				call.getCallDefinition().denyMember(userBanData.uuid());
+				System.out.println(call.getCallDefinition());
+				CallServer.getInstance().rootConnection.send(new CallDefData(call.getCallDefinition()));
+			}
 		}
 	}
 	
@@ -101,6 +127,8 @@ public class CallClientConnection implements ReceiveListener, DisconnectListener
 	@Override
 	public void onDisconnect() {
 		call.clientConnections.remove(user);
+		UserLeaveData userLeaveData = new UserLeaveData(user);
+		call.clientConnections.values().forEach(c -> c.connection.send(userLeaveData));
 	}
 	
 }

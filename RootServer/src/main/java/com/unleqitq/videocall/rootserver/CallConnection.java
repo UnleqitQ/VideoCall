@@ -49,7 +49,13 @@ public class CallConnection implements ReceiveListener, DisconnectListener {
 			MachineInformation info = (MachineInformation) data.getData();
 			port = info.getPort();
 			freeMemory = info.getFreeMemory();
-			System.out.println("Info: " + info);
+			//System.out.println("Info: " + info);
+		}
+		if (data.getData() instanceof CallDefData callDefData) {
+			rootServer.getManagerHandler().getCallManager().addCall(
+					callDefData.getCall(rootServer.getManagerHandler()));
+			rootServer.callConnections.values().forEach(c -> c.connection.send(callDefData));
+			rootServer.accessConnections.forEach(c -> c.connection.send(callDefData));
 		}
 	}
 	

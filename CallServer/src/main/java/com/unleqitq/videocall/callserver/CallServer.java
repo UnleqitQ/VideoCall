@@ -39,7 +39,8 @@ public class CallServer implements ReceiveListener {
 	@NotNull
 	private final ManagerHandler managerHandler;
 	
-	@NotNull ClientNetworkConnection rootConnection;
+	@NotNull
+	public ClientNetworkConnection rootConnection;
 	@NotNull YAMLConfiguration configuration = new YAMLConfiguration();
 	@NotNull Server server;
 	@NotNull Set<BaseConnection> baseConnections = Collections.synchronizedSet(new HashSet<>());

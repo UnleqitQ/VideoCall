@@ -5,6 +5,7 @@ import com.unleqitq.videocall.callclient.gui.video.VideoPanels;
 import com.unleqitq.videocall.callclient.utils.AudioUtils;
 import com.unleqitq.videocall.callclient.utils.VideoUtils;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.DisconnectListener;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.user.CallUser;
 import com.unleqitq.videocall.transferclasses.Data;
@@ -33,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class CallClient implements ReceiveListener {
+public class CallClient implements ReceiveListener, DisconnectListener {
 	
 	@NotNull
 	private static CallClient instance;
@@ -51,6 +52,7 @@ public class CallClient implements ReceiveListener {
 	
 	@NotNull
 	public Map<UUID, CallUser> users;
+	public Map<UUID, ClientCallUser> clientCallUsers;
 	@NotNull String host;
 	int port;
 	
@@ -117,6 +119,7 @@ public class CallClient implements ReceiveListener {
 		Config.audioDuration = clamp(configuration.getFloat("audio.duration", 0.5f), 0.2f, 4f);
 		
 		users = new HashMap<>();
+		clientCallUsers = new HashMap<>();
 		
 		this.username = username;
 		this.password = password;
@@ -133,6 +136,7 @@ public class CallClient implements ReceiveListener {
 		Socket socket = new Socket(host, port);
 		connection = new ClientNetworkConnection(socket);
 		connection.setReceiveListener(this);
+		connection.setDisconnectListener(this);
 		connection.init();
 		
 		try {
@@ -336,11 +340,21 @@ public class CallClient implements ReceiveListener {
 		if (data.getData() instanceof CallUserData) {
 			CallUser user = ((CallUserData) data.getData()).getUser();
 			users.put(user.getUuid(), user);
+			if (!clientCallUsers.containsKey(user.getUuid()))
+				clientCallUsers.put(user.getUuid(), new ClientCallUser(user.getUuid()));
+			if (user.getUuid().equals(userUuid)) {
+				mute = user.muted;
+				video = user.video;
+				mainWindow.controlBar.muteButton.setSelected(mute);
+				mainWindow.controlBar.videoButton.setSelected(video);
+			}
 			VideoPanels.instance.addPanel(user.getUuid());
 			System.out.println(user);
+			clientCallUsers.get(user.getUuid()).connected = true;
 		}
 		if (data.getData() instanceof UserLeaveData leaveData) {
 			VideoPanels.instance.removePanel(leaveData.uuid());
+			clientCallUsers.get(leaveData.uuid()).connected = false;
 		}
 		
 		if (data.getData() instanceof AudioData audioData) {
@@ -365,6 +379,11 @@ public class CallClient implements ReceiveListener {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	@Override
+	public void onDisconnect() {
+		System.exit(0);
 	}
 	
 	

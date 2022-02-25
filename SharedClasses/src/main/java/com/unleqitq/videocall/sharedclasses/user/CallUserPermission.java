@@ -69,4 +69,9 @@ public class CallUserPermission extends CallGroupPermission {
 		return callUserPermission;
 	}
 	
+	@Override
+	public String toString() {
+		return "CallUserPermission " + save();
+	}
+	
 }

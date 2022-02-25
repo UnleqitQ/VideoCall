@@ -1,6 +1,8 @@
 package com.unleqitq.videocall.callclient.utils;
 
 import com.unleqitq.videocall.callclient.CallClient;
+import com.unleqitq.videocall.callclient.ClientCallUser;
+import com.unleqitq.videocall.callclient.gui.settings.SettingsPanel;
 import com.unleqitq.videocall.transferclasses.call.AudioData;
 import org.jetbrains.annotations.NotNull;
 
@@ -263,6 +265,18 @@ public class AudioUtils {
 			line.stop();
 		}
 		return line;
+	}
+	
+	public void updateGain(UUID user) {
+		SourceDataLine line = getLine(user);
+		FloatControl control = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
+		control.setValue(CallClient.getInstance().clientCallUsers.get(
+				user).gain * SettingsPanel.instance.gainSlider.getValue() * 0.001f * (control.getMaximum() - control.getMinimum()) + control.getMinimum());
+	}
+	
+	public void updateGain() {
+		CallClient.getInstance().clientCallUsers.values().stream().filter(ClientCallUser::isConnected).forEach(
+				c -> updateGain(c.uuid));
 	}
 	
 	/*public void step() throws IOException {
