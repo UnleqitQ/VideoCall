@@ -1,31 +1,44 @@
 package com.unleqitq.videocall.transferclasses.base.data;
 
-import com.google.gson.JsonParser;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import com.unleqitq.videocall.sharedclasses.account.Account;
 import org.apache.commons.codec.DecoderException;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.io.*;
 
-public class AccountData implements Serializable {
+public class AccountData implements Externalizable {
 	
 	@Serial
 	private static final long serialVersionUID = -3526151276793127630L;
 	@NotNull
-	private final String json;
+	private Account account;
+	
+	public AccountData() {
+		
+	}
 	
 	public AccountData(@NotNull Account account) {
-		json = account.save().toString();
+		this.account = account;
 	}
 	
 	public String getJson() {
-		return json;
+		return account.save().toString();
 	}
 	
 	public Account getAccount(IManagerHandler managerHandler) throws DecoderException {
-		return Account.load(managerHandler, JsonParser.parseString(json).getAsJsonObject());
+		return account;
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		account.writeExternal(out);
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		account = new Account();
+		account.readExternal(in);
 	}
 	
 }

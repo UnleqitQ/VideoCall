@@ -5,8 +5,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import com.unleqitq.videocall.sharedclasses.ObjectHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +24,8 @@ public class TeamCallDefinition extends CallDefinition {
 	private final Set<UUID> members = new HashSet<>();
 	@NotNull
 	private final Set<UUID> denied = new HashSet<>();
+	
+	public TeamCallDefinition() {}
 	
 	public TeamCallDefinition(@NotNull IManagerHandler managerHandler, UUID uuid, @NotNull UUID creator, long time, String name) {
 		super(managerHandler, uuid, creator, time, name);
@@ -150,6 +156,54 @@ public class TeamCallDefinition extends CallDefinition {
 	
 	public Set<UUID> teams() {
 		return Collections.unmodifiableSet(teams);
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		ObjectHandler.ObjectOutputHandler h = new ObjectHandler.ObjectOutputHandler(out);
+		out.writeInt(members.size());
+		members.forEach(v -> {
+			try {
+				h.writeUuid(v);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+		out.writeInt(denied.size());
+		denied.forEach(v -> {
+			try {
+				h.writeUuid(v);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+		out.writeInt(teams.size());
+		teams.forEach(v -> {
+			try {
+				h.writeUuid(v);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		super.readExternal(in);
+		ObjectHandler.ObjectInputHandler h = new ObjectHandler.ObjectInputHandler(in);
+		int m = in.readInt();
+		for (int i = 0; i < m; i++) {
+			members.add(h.readUuid());
+		}
+		int d = in.readInt();
+		for (int i = 0; i < d; i++) {
+			denied.add(h.readUuid());
+		}
+		int t = in.readInt();
+		for (int i = 0; i < t; i++) {
+			teams.add(h.readUuid());
+		}
 	}
 	
 }

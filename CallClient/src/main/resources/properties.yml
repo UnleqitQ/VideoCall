@@ -11,7 +11,9 @@ video:
 audio:
   duration: 0.5
 screen:
-  fps: 30
+  fps: 50
+gui:
+  updateSpeed: 50
 
 cacheDuration: 120
 refreshInterval: 10

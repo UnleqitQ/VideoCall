@@ -3,24 +3,33 @@ package com.unleqitq.videocall.sharedclasses.user;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import com.unleqitq.videocall.sharedclasses.ObjectHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Objects;
 import java.util.UUID;
 
-public class User {
+public class User implements Externalizable {
 	
 	@NotNull
 	private final IManagerHandler managerHandler;
 	
 	@NotNull
-	private final UUID uuid;
+	private UUID uuid;
 	@NotNull
 	private String firstname;
 	@NotNull
 	private String lastname;
 	@NotNull
 	private String username;
+	
+	public User() {
+		managerHandler = IManagerHandler.HANDLER[0];
+	}
 	
 	public User(@NotNull IManagerHandler managerHandler, @NotNull UUID uuid, @NotNull String firstname, @NotNull String lastname, @NotNull String username) {
 		this.managerHandler = managerHandler;
@@ -96,6 +105,24 @@ public class User {
 	@Override
 	public String toString() {
 		return "User" + save();
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		ObjectHandler.ObjectOutputHandler h = new ObjectHandler.ObjectOutputHandler(out);
+		h.writeUuid(uuid);
+		h.writeString(firstname);
+		h.writeString(lastname);
+		h.writeString(username);
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		ObjectHandler.ObjectInputHandler h = new ObjectHandler.ObjectInputHandler(in);
+		uuid = h.readUuid();
+		firstname = h.readString();
+		lastname = h.readString();
+		username = h.readString();
 	}
 	
 }

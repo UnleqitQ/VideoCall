@@ -94,7 +94,12 @@ public abstract class AbstractNetworkConnection {
 	
 	protected void write(SendData data) {
 		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
 			objectOutputStream.writeUnshared(data);
+			oos.writeUnshared(data);
+			System.out.printf("Sending %5.01f kB\n", baos.size() / 1000f);
+			//baos.writeTo(outputStream);
 		} catch (SocketException ignored) {
 			//System.out.println("Connection reset " + socket.getInetAddress());
 			connected = false;
@@ -141,7 +146,6 @@ public abstract class AbstractNetworkConnection {
 				onConfirmation();
 			}
 		} catch (SocketException | EOFException | StreamCorruptedException | OptionalDataException | ClassCastException e) {
-			System.out.println("Connection is reset");
 			connected = false;
 			disconnectListener.onDisconnect();
 		} catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | ClassNotFoundException e) {

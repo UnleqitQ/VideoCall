@@ -105,7 +105,7 @@ public class ClientLauncher implements ReceiveListener {
 	
 	@Override
 	public void onReceive(Data data) {
-		System.out.println(data);
+		//System.out.println(data);
 		if (data.getData() instanceof AccessInformation info) {
 			Thread thread0 = new Thread(() -> {
 				try {

@@ -3,28 +3,37 @@ package com.unleqitq.videocall.sharedclasses.account;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import com.unleqitq.videocall.sharedclasses.ObjectHandler;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.UUID;
 
-public class Account {
+public class Account implements Externalizable {
 	
 	@NotNull
 	private final IManagerHandler managerHandler;
 	@NotNull
-	private final UUID uuid;
+	private UUID uuid;
 	@NotNull
 	private String username;
 	@NotNull
 	private byte[] password;
 	
-	public Account(@NotNull IManagerHandler managerHandler, @NotNull final UUID uuid, @NotNull String username, @NotNull byte[] password) {
+	public Account() {
+		managerHandler = IManagerHandler.HANDLER[0];
+	}
+	
+	public Account(@NotNull IManagerHandler managerHandler, @NotNull final UUID uuid, @NotNull String username, byte[] password) {
 		this.managerHandler = managerHandler;
 		this.uuid = uuid;
 		this.username = username;
@@ -97,6 +106,20 @@ public class Account {
 	@Override
 	public String toString() {
 		return "Account" + save();
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		ObjectHandler.ObjectOutputHandler.writeUuid(out, uuid);
+		ObjectHandler.ObjectOutputHandler.writeString(out, username);
+		ObjectHandler.ObjectOutputHandler.writeByteArray(out, password);
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		uuid = ObjectHandler.ObjectInputHandler.readUuid(in);
+		username = ObjectHandler.ObjectInputHandler.readString(in);
+		password = ObjectHandler.ObjectInputHandler.readByteArray(in);
 	}
 	
 }

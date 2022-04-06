@@ -2,8 +2,12 @@ package com.unleqitq.videocall.sharedclasses.user;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.unleqitq.videocall.sharedclasses.ObjectHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serial;
 
 public class CallUserPermission extends CallGroupPermission {
@@ -16,6 +20,10 @@ public class CallUserPermission extends CallGroupPermission {
 	public boolean overrideBan;
 	public boolean overrideShareScreen;
 	public CallGroupPermission groupPermission;
+	
+	public CallUserPermission() {
+		super();
+	}
 	
 	public CallUserPermission(int level, CallGroupPermission groupPermission) {
 		super(level);
@@ -72,6 +80,29 @@ public class CallUserPermission extends CallGroupPermission {
 	@Override
 	public String toString() {
 		return "CallUserPermission " + save();
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		ObjectHandler.ObjectOutputHandler h = new ObjectHandler.ObjectOutputHandler(out);
+		out.writeBoolean(overrideMuteOthers);
+		out.writeBoolean(overrideKick);
+		out.writeBoolean(overrideBan);
+		out.writeBoolean(overrideShareScreen);
+		groupPermission.writeExternal(out);
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		super.readExternal(in);
+		ObjectHandler.ObjectInputHandler h = new ObjectHandler.ObjectInputHandler(in);
+		overrideMuteOthers = in.readBoolean();
+		overrideKick = in.readBoolean();
+		overrideBan = in.readBoolean();
+		overrideShareScreen = in.readBoolean();
+		groupPermission = new CallGroupPermission();
+		groupPermission.readExternal(in);
 	}
 	
 }

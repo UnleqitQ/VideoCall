@@ -1,6 +1,7 @@
 package com.unleqitq.videocall.callclient.gui.video;
 
 import com.unleqitq.videocall.callclient.CallClient;
+import com.unleqitq.videocall.callclient.ClientCallUser;
 import com.unleqitq.videocall.sharedclasses.user.CallUser;
 import com.unleqitq.videocall.transferclasses.base.data.CallUserData;
 import com.unleqitq.videocall.transferclasses.call.UserBanData;
@@ -50,6 +51,8 @@ public class UserSettings {
 		
 		gainPanel.setLayout(new BoxLayout(gainPanel, BoxLayout.Y_AXIS));
 		gainLabel.setLabelFor(gainSlider);
+		if (!CallClient.getInstance().clientCallUsers.containsKey(uuid))
+			CallClient.getInstance().clientCallUsers.put(uuid, new ClientCallUser(uuid));
 		gainSlider.setValue((int) (CallClient.getInstance().clientCallUsers.get(uuid).gain * 1000));
 		gainSlider.addChangeListener(e -> {
 			gainLabel.repaint();

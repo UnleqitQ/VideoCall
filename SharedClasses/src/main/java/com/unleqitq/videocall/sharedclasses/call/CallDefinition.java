@@ -2,9 +2,11 @@ package com.unleqitq.videocall.sharedclasses.call;
 
 import com.google.gson.JsonObject;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import com.unleqitq.videocall.sharedclasses.ObjectHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -13,11 +15,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-public abstract class CallDefinition {
+public abstract class CallDefinition implements Externalizable {
+	
+	@Serial
+	private static final long serialVersionUID = 7684196994334096425L;
 	
 	@NotNull
 	private final IManagerHandler managerHandler;
-	private final UUID uuid;
+	private UUID uuid;
 	@NotNull
 	private UUID creator;
 	private long created;
@@ -25,6 +30,10 @@ public abstract class CallDefinition {
 	private long time;
 	private String name;
 	private String description;
+	
+	public CallDefinition() {
+		managerHandler = IManagerHandler.HANDLER[0];
+	}
 	
 	public CallDefinition(@NotNull IManagerHandler managerHandler, UUID uuid, @NotNull UUID creator, long time, String name) {
 		this.managerHandler = managerHandler;
@@ -148,6 +157,30 @@ public abstract class CallDefinition {
 	@Override
 	public String toString() {
 		return "CallDefinition" + save();
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		ObjectHandler.ObjectOutputHandler h = new ObjectHandler.ObjectOutputHandler(out);
+		h.writeUuid(uuid);
+		h.writeUuid(creator);
+		out.writeLong(created);
+		out.writeLong(changed);
+		out.writeLong(time);
+		h.writeString(name);
+		h.writeString(description);
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		ObjectHandler.ObjectInputHandler h = new ObjectHandler.ObjectInputHandler(in);
+		uuid = h.readUuid();
+		creator = h.readUuid();
+		created = in.readLong();
+		changed = in.readLong();
+		time = in.readLong();
+		name = h.readString();
+		description = h.readString();
 	}
 	
 }

@@ -49,7 +49,7 @@ public class AccessConnection implements ReceiveListener, DisconnectListener {
 			freeMemory = info.getFreeMemory();
 		}
 		if (data.getData() instanceof TeamData teamData) {
-			System.out.println(teamData);
+			//System.out.println(teamData);
 			if (teamData.getUUID() != null) {
 				Team team = teamData.getTeam(rootServer.getManagerHandler());
 				rootServer.getManagerHandler().getTeamManager().addTeam(team);
@@ -69,11 +69,14 @@ public class AccessConnection implements ReceiveListener, DisconnectListener {
 			}
 		}
 		if (data.getData() instanceof CallDefData callDefData) {
-			System.out.println(callDefData);
+			//System.out.println(callDefData);
 			if (callDefData.getUUID() != null) {
 				CallDefinition callDefinition = callDefData.getCall(rootServer.getManagerHandler());
 				rootServer.getManagerHandler().getCallManager().addCall(callDefinition);
 				for (AccessConnection connection : rootServer.accessQueue) {
+					connection.connection.send(new CallDefData(callDefinition));
+				}
+				for (CallConnection connection : rootServer.callConnections.values()) {
 					connection.connection.send(new CallDefData(callDefinition));
 				}
 			}
@@ -84,6 +87,9 @@ public class AccessConnection implements ReceiveListener, DisconnectListener {
 				CallDefinition callDefinition = CallDefinition.load(rootServer.getManagerHandler(), object);
 				rootServer.getManagerHandler().getCallManager().addCall(callDefinition);
 				for (AccessConnection connection : rootServer.accessQueue) {
+					connection.connection.send(new CallDefData(callDefinition));
+				}
+				for (CallConnection connection : rootServer.callConnections.values()) {
 					connection.connection.send(new CallDefData(callDefinition));
 				}
 			}

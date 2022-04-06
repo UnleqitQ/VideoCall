@@ -82,12 +82,12 @@ public class CallClientConnection implements ReceiveListener, DisconnectListener
 		}
 		if (data.getData() instanceof ScreenVideoData videoData) {
 			ScreenVideoData r = new ScreenVideoData(videoData.creation(), videoData.imageData(), user);
-			if (call.getCallUser(user).permission.shareScreen)
+			if (call.getCallUser(user).permission.isShareScreen())
 				call.clientConnections.values().stream()/*.filter(c -> !c.user.equals(user))*/.forEach(
 						c -> c.connection.send(r));
 		}
 		if (data.getData() instanceof AudioData audioData) {
-			System.out.println(audioData);
+			//System.out.println(audioData);
 			AudioData r = new AudioData(audioData.data(), audioData.offset(), audioData.bufferSize(), user);
 			call.clientConnections.values().stream()/*.filter(c -> !c.user.equals(user))*/.forEach(
 					c -> c.connection.send(r));
@@ -95,6 +95,9 @@ public class CallClientConnection implements ReceiveListener, DisconnectListener
 		if (data.getData() instanceof UserLeaveData userLeaveData) {
 			if (getCallUser().permission.isKick()) {
 				try {
+					//System.out.println("CallClientConnection.onReceive (98)");
+					//System.out.println("Closed Connection to " + call.clientConnections.get(
+					//		user).connection.getSocket().getInetAddress());
 					call.clientConnections.get(user).connection.getSocket().close();
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -106,6 +109,9 @@ public class CallClientConnection implements ReceiveListener, DisconnectListener
 		if (data.getData() instanceof UserBanData userBanData) {
 			if (getCallUser().permission.isBan()) {
 				try {
+					//System.out.println("CallClientConnection.onReceive (112)");
+					//System.out.println("Closed Connection to " + call.clientConnections.get(
+					//		user).connection.getSocket().getInetAddress());
 					call.clientConnections.get(user).connection.getSocket().close();
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -114,10 +120,11 @@ public class CallClientConnection implements ReceiveListener, DisconnectListener
 				UserLeaveData userLeaveData = new UserLeaveData(userBanData.uuid());
 				call.clientConnections.values().forEach(c -> c.connection.send(userLeaveData));
 				call.getCallDefinition().denyMember(userBanData.uuid());
-				System.out.println(call.getCallDefinition());
+				//System.out.println(call.getCallDefinition());
 				CallServer.getInstance().rootConnection.send(new CallDefData(call.getCallDefinition()));
 			}
 		}
+		
 	}
 	
 	@Override

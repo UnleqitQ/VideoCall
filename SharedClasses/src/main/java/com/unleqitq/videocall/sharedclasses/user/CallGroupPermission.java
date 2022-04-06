@@ -2,12 +2,12 @@ package com.unleqitq.videocall.sharedclasses.user;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.unleqitq.videocall.sharedclasses.ObjectHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.io.*;
 
-public class CallGroupPermission implements Serializable {
+public class CallGroupPermission implements Externalizable {
 	
 	@Serial
 	private static final long serialVersionUID = 388640699055766668L;
@@ -18,6 +18,8 @@ public class CallGroupPermission implements Serializable {
 	public boolean ban;
 	public boolean shareScreen;
 	public int level;
+	
+	public CallGroupPermission() {}
 	
 	public CallGroupPermission(int level) {
 		this.level = level;
@@ -81,6 +83,28 @@ public class CallGroupPermission implements Serializable {
 	@Override
 	public String toString() {
 		return "CallGroupPermission " + save();
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		ObjectHandler.ObjectOutputHandler h = new ObjectHandler.ObjectOutputHandler(out);
+		h.writeString(name);
+		out.writeBoolean(muteOthers);
+		out.writeBoolean(kick);
+		out.writeBoolean(ban);
+		out.writeBoolean(shareScreen);
+		out.writeInt(level);
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		ObjectHandler.ObjectInputHandler h = new ObjectHandler.ObjectInputHandler(in);
+		name = h.readString();
+		muteOthers = in.readBoolean();
+		kick = in.readBoolean();
+		ban = in.readBoolean();
+		shareScreen = in.readBoolean();
+		level = in.readInt();
 	}
 	
 }

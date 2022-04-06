@@ -2,11 +2,30 @@ package com.unleqitq.videocall.sharedclasses.call;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.unleqitq.videocall.sharedclasses.ObjectHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.UUID;
 
-public record CallInformation(@NotNull UUID uuid, @NotNull UUID serverUuid, @NotNull String host, int port) {
+public class CallInformation implements Externalizable {
+	
+	UUID uuid;
+	UUID serverUuid;
+	String host;
+	int port;
+	
+	public CallInformation() {}
+	
+	public CallInformation(@NotNull UUID uuid, @NotNull UUID serverUuid, @NotNull String host, int port) {
+		this.uuid = uuid;
+		this.serverUuid = serverUuid;
+		this.port = port;
+		this.host = host;
+	}
 	
 	@NotNull
 	public UUID getUuid() {
@@ -16,6 +35,14 @@ public record CallInformation(@NotNull UUID uuid, @NotNull UUID serverUuid, @Not
 	@NotNull
 	public UUID getServerUuid() {
 		return serverUuid;
+	}
+	
+	public int getPort() {
+		return port;
+	}
+	
+	public String getHost() {
+		return host;
 	}
 	
 	public JsonObject save() {
@@ -36,6 +63,24 @@ public record CallInformation(@NotNull UUID uuid, @NotNull UUID serverUuid, @Not
 	@Override
 	public String toString() {
 		return "CallInformation{ " + save() + " }";
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		ObjectHandler.ObjectOutputHandler h = new ObjectHandler.ObjectOutputHandler(out);
+		h.writeUuid(uuid);
+		h.writeUuid(serverUuid);
+		h.writeString(host);
+		out.writeInt(port);
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		ObjectHandler.ObjectInputHandler h = new ObjectHandler.ObjectInputHandler(in);
+		uuid = h.readUuid();
+		serverUuid = h.readUuid();
+		host = h.readString();
+		port = in.readInt();
 	}
 	
 }

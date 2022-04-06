@@ -49,18 +49,23 @@ public class ClientConnection implements ReceiveListener, DisconnectListener {
 					CallServer.getInstance().preConnections.remove(this);
 					if (CallServer.getInstance().clientConnections.containsKey(user)) {
 						ClientConnection existing = CallServer.getInstance().clientConnections.get(user);
-						System.out.println("User already Logged In");
-						System.out.println("New Connection: " + connection);
-						System.out.println("Preexisting Connection: " + existing.connection);
+						//System.out.println("User already Logged In");
+						//System.out.println("New Connection: " + connection);
+						//System.out.println("Preexisting Connection: " + existing.connection);
 						CallServer.getInstance().clientConnections.remove(user);
 						connection.getReceiveThread().interrupt();
 						CallServer.getInstance().clientConnections.get(user).connection.getReceiveThread().interrupt();
 						try {
+							//System.out.println("ClientConnection.onReceive (59)");
+							//System.out.println("Closed Connection to " + connection.getSocket().getInetAddress());
 							connection.getSocket().close();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
 						try {
+							//System.out.println("ClientConnection.onReceive (66)");
+							//System.out.println(
+							//		"Closed Connection to " + existing.connection.getSocket().getInetAddress());
 							existing.connection.getSocket().close();
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -80,11 +85,13 @@ public class ClientConnection implements ReceiveListener, DisconnectListener {
 		if (user == null) {
 			return;
 		}
-		System.out.println(data);
+		//System.out.println(data);
 		if (data.getData() instanceof RequestCallData requestCallData) {
 			Call call = CallServer.getInstance().getCall(requestCallData.call());
 			if (!call.callUsers.containsKey(user)) {
 				try {
+					//System.out.println("ClientConnection.onReceive (93)");
+					//System.out.println("Closed Connection to " + connection.getSocket().getInetAddress());
 					connection.getSocket().close();
 				} catch (IOException e) {
 					e.printStackTrace();

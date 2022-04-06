@@ -2,10 +2,7 @@ package com.unleqitq.videocall.callserver;
 
 import com.unleqitq.videocall.callserver.call.Call;
 import com.unleqitq.videocall.callserver.managers.*;
-import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
-import com.unleqitq.videocall.sharedclasses.ReceiveListener;
-import com.unleqitq.videocall.sharedclasses.Server;
-import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.*;
 import com.unleqitq.videocall.sharedclasses.account.Account;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.team.Team;
@@ -57,6 +54,7 @@ public class CallServer implements ReceiveListener {
 		loadConfig();
 		
 		managerHandler = new ManagerHandler();
+		IManagerHandler.HANDLER[0] = managerHandler;
 		managerHandler.setCallManager(new CallManager(managerHandler)).setTeamManager(
 				new TeamManager(managerHandler)).setUserManager(new UserManager(managerHandler)).setAccountManager(
 				new AccountManager(managerHandler)).setConfiguration(configuration);
@@ -220,6 +218,16 @@ public class CallServer implements ReceiveListener {
 			User user = ((UserData) data.getData()).getUser(managerHandler);
 			managerHandler.getUserManager().addUser(user);
 			System.out.println(user);
+		}
+		if (data.getData() instanceof AccountData) {
+			Account account;
+			try {
+				account = ((AccountData) data.getData()).getAccount(managerHandler);
+				managerHandler.getAccountManager().addAccount(account);
+				System.out.println(account);
+			} catch (DecoderException e) {
+				e.printStackTrace();
+			}
 		}
 		if (data.getData() instanceof TeamData) {
 			Team team = ((TeamData) data.getData()).getTeam(managerHandler);

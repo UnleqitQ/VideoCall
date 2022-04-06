@@ -5,20 +5,25 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.unleqitq.videocall.sharedclasses.IManagerHandler;
+import com.unleqitq.videocall.sharedclasses.ObjectHandler;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-public class Team {
+public class Team implements Externalizable {
 	
 	@NotNull
 	private IManagerHandler managerHandler;
 	
-	private final UUID uuid;
+	private UUID uuid;
 	
 	@NotNull
 	private UUID creator;
@@ -26,6 +31,10 @@ public class Team {
 	private final Set<UUID> members = new HashSet<>();
 	@NotNull
 	private String name;
+	
+	public Team() {
+	
+	}
 	
 	public Team(@NotNull IManagerHandler managerHandler, UUID uuid, @NotNull UUID creator, @NotNull String name) {
 		this.managerHandler = managerHandler;
@@ -112,6 +121,34 @@ public class Team {
 	@Override
 	public String toString() {
 		return "Team" + save();
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		ObjectHandler.ObjectOutputHandler h = new ObjectHandler.ObjectOutputHandler(out);
+		h.writeUuid(uuid);
+		h.writeUuid(creator);
+		h.writeString(name);
+		out.writeInt(members.size());
+		members.forEach(v -> {
+			try {
+				h.writeUuid(v);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		ObjectHandler.ObjectInputHandler h = new ObjectHandler.ObjectInputHandler(in);
+		uuid = h.readUuid();
+		creator = h.readUuid();
+		name = h.readString();
+		int m = in.readInt();
+		for (int i = 0; i < m; i++) {
+			members.add(h.readUuid());
+		}
 	}
 	
 }

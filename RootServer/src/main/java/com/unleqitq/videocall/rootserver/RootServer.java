@@ -2,6 +2,7 @@ package com.unleqitq.videocall.rootserver;
 
 import com.unleqitq.videocall.rootserver.managers.*;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import com.unleqitq.videocall.sharedclasses.Server;
 import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
 import com.unleqitq.videocall.sharedclasses.account.Account;
@@ -72,6 +73,7 @@ public class RootServer {
 		thread = new Thread(this::loop);
 		thread.start();
 		managerHandler = new ManagerHandler();
+		IManagerHandler.HANDLER[0] = managerHandler;
 		managerHandler.setCallManager(new CallManager(managerHandler)).setTeamManager(
 				new TeamManager(managerHandler)).setUserManager(new UserManager(managerHandler)).setAccountManager(
 				new AccountManager(managerHandler)).setConfiguration(configuration);
@@ -119,9 +121,9 @@ public class RootServer {
 		Team team = managerHandler.getTeamManager().createTeam(
 				managerHandler.getUserManager().getUserMap().keySet().iterator().next(), "Test 0");
 		
-		System.out.println(managerHandler.getAccountManager().getAccount("root").save());
-		System.out.println(call);
-		System.out.println(team);
+		//System.out.println(managerHandler.getAccountManager().getAccount("root").save());
+		//System.out.println(call);
+		//System.out.println(team);
 	}
 	
 	public Account createUser(@NotNull String username, byte[] password, @NotNull String firstname, @NotNull String lastname) {
@@ -254,7 +256,8 @@ public class RootServer {
 		while (true) {
 			String v = reader.nextLine();
 			String[] elements = v.split(" ");
-			if (v.length() == 5 && elements[0].equalsIgnoreCase("adduser")) {
+			//System.out.println(elements);
+			if (elements.length == 5 && elements[0].equalsIgnoreCase("adduser")) {
 				String username = elements[1];
 				String password = elements[2];
 				String fn = elements[3];
@@ -263,11 +266,23 @@ public class RootServer {
 				try {
 					md = MessageDigest.getInstance(MessageDigestAlgorithms.SHA_1);
 					md.update(password.getBytes());
-					System.out.println("Created " + createUser(username, md.digest(), fn, ln));
+					Account account = createUser(username, md.digest(), fn, ln);
+					System.out.println("Created " + account);
+					User user = managerHandler.getUserManager().getUser(account.getUuid());
+					for (AccessConnection connection : accessConnections) {
+						connection.connection.send(new AccountData(account));
+						connection.connection.send(new UserData(user));
+					}
+					for (CallConnection connection : callConnections.values()) {
+						connection.connection.send(new AccountData(account));
+						connection.connection.send(new UserData(user));
+					}
 				} catch (NoSuchAlgorithmException e) {
 					e.printStackTrace();
 				}
 			}
+			if (v.equalsIgnoreCase("exit"))
+				System.exit(0);
 		}
 		
 	}

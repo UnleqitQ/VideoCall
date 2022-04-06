@@ -62,7 +62,7 @@ public class MainWindow {
 			if (frame.isActive())
 				frame.setVisible(true);
 			try {
-				Thread.sleep(100);
+				Thread.sleep(1000 / clamp(CallClient.getInstance().configuration.getInt("gui.updateSpeed"), 1, 100));
 			} catch (InterruptedException ignored) {
 				return;
 			}
@@ -80,5 +80,15 @@ public class MainWindow {
 		}
 	}
 	
+	
+	public static int clamp(int v, int min, int max) {
+		if (min > max)
+			return (min + max) / 2;
+		if (v > max)
+			return max;
+		if (v < min)
+			return min;
+		return v;
+	}
 	
 }

@@ -36,6 +36,12 @@ public class VideoPanels {
 		panel.add(smallVideoPanels.scrollPane);
 	}
 	
+	public VideoPanel getVideoPanel(UUID user) {
+		if (!videoPanelMap.containsKey(user))
+			addPanel(user);
+		return videoPanelMap.get(user);
+	}
+	
 	public void addPanel(UUID user) {
 		if (videoPanelMap.containsKey(user))
 			return;
@@ -98,6 +104,7 @@ public class VideoPanels {
 	}
 	
 	public void receiveVideo(VideoData videoData) throws IOException {
+		addPanel(videoData.user());
 		if (focusSingle) {
 			if (!focusScreen) {
 				if (videoData.user().equals(focusedUser)) {
@@ -110,6 +117,7 @@ public class VideoPanels {
 	}
 	
 	public void receiveVideo(ScreenVideoData videoData) throws IOException {
+		addPanel(videoData.user());
 		if (focusSingle) {
 			if (focusScreen) {
 				if (videoData.user().equals(focusedUser)) {

@@ -76,7 +76,11 @@ public class DevicesPanel {
 	
 	public void updateCams() {
 		videoInputBox.removeAllItems();
-		CallClient.getInstance().videoUtils.getWebcams().forEach(videoInputBox::addItem);
+		try {
+			CallClient.getInstance().videoUtils.getWebcams().forEach(videoInputBox::addItem);
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void updateAudioInputs() {

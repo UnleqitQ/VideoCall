@@ -33,7 +33,7 @@ public class ClientConnection implements ReceiveListener, DisconnectListener {
 		AccessInformation information =
 				new AccessInformation(accessConnection.connection.getSocket().getInetAddress().getCanonicalHostName(),
 						accessConnection.port);
-		System.out.println("sent" + information);
+		//System.out.println("sent" + information);
 		connection.send(information);
 	}
 	

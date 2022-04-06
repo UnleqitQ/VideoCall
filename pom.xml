@@ -47,18 +47,20 @@
     </properties-->
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 
@@ -240,11 +242,11 @@
             <artifactId>material-ui-swing</artifactId>
             <version>1.1.2</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.github.Valkryst</groupId>
             <artifactId>VTerminal</artifactId>
             <version>2021.03.04</version>
-        </dependency>
+        </dependency-->
 
         <!--dependency>
             <groupId>org.pushing-pixels</groupId>

@@ -8,6 +8,7 @@ import com.unleqitq.videocall.client.gui.TrayHandler;
 import com.unleqitq.videocall.client.gui.login.LoginGui;
 import com.unleqitq.videocall.client.managers.*;
 import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.IManagerHandler;
 import com.unleqitq.videocall.sharedclasses.ReceiveListener;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.call.CallInformation;
@@ -107,6 +108,7 @@ public class Client implements ReceiveListener {
 		unknownRequestThread = new Thread(threadGroup, this::unknownRequestLoop);
 		
 		managerHandler = new ManagerHandler();
+		IManagerHandler.HANDLER[0] = managerHandler;
 		managerHandler.setCallManager(new CallManager(managerHandler)).setTeamManager(
 				new TeamManager(managerHandler)).setUserManager(new UserManager(managerHandler)).setAccountManager(
 				new AccountManager(managerHandler)).setConfiguration(configuration);
@@ -319,21 +321,21 @@ public class Client implements ReceiveListener {
 					User user = ((UserData) d0).getUser(managerHandler);
 					managerHandler.getUserManager().addUser(user);
 					unknownValues.users.remove(user.getUuid());
-					System.out.println(user);
+					//System.out.println(user);
 				}
 				if (d0 instanceof TeamData) {
 					Team team = ((TeamData) d0).getTeam(managerHandler);
 					managerHandler.getTeamManager().addTeam(team);
 					window.teamsPane.teamsList.add(team.getUuid());
 					unknownValues.teams.remove(team.getUuid());
-					System.out.println(team);
+					//System.out.println(team);
 				}
 				if (d0 instanceof CallDefData) {
 					CallDefinition call = ((CallDefData) d0).getCall(managerHandler);
 					managerHandler.getCallManager().addCall(call);
 					window.callsPane.callsList.add(call.getUuid());
 					unknownValues.calls.remove(call.getUuid());
-					System.out.println(call);
+					//System.out.println(call);
 				}
 			}
 			window.callsPane.callsList.updateList();
@@ -346,8 +348,8 @@ public class Client implements ReceiveListener {
 			//infoG(callInformation.toString());
 			new Thread(() -> {
 				try {
-					new CallClient(username, password, callInformation.host(), callInformation.port(),
-							callInformation.uuid());
+					new CallClient(username, password, callInformation.getHost(), callInformation.getPort(),
+							callInformation.getUuid());
 					/*JavaProcess process = JavaProcess.exec(CallClient.class, List.of("-Xmx200m"),
 							List.of(username, password, callInformation.host(),
 									Integer.toString(callInformation.port()), callInformation.uuid().toString()));
@@ -359,6 +361,7 @@ public class Client implements ReceiveListener {
 			}).start();
 		}
 		if (data.getData() instanceof AuthenticationResult result) {
+			System.out.println(result);
 			switch (result.result()) {
 				case -2 -> System.out.println("User doesn't exist");
 				case -1 -> System.out.println("Some weird error");

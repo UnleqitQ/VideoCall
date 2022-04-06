@@ -37,7 +37,7 @@ public class CallClient implements ReceiveListener, DisconnectListener {
 	@NotNull
 	private static CallClient instance;
 	
-	YAMLConfiguration configuration = new YAMLConfiguration();
+	public YAMLConfiguration configuration = new YAMLConfiguration();
 	public ClientNetworkConnection connection;
 	
 	public MainWindow mainWindow;
@@ -182,7 +182,7 @@ public class CallClient implements ReceiveListener, DisconnectListener {
 			try {
 				if (microphones.size() > 0)
 					audioUtils.setMicrophoneInfo(microphones.get(1));
-			} catch (IllegalArgumentException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -338,13 +338,16 @@ public class CallClient implements ReceiveListener, DisconnectListener {
 	
 	@Override
 	public void onReceive(Data data) {
-		if (data.getData() instanceof ListData) {
-			for (Serializable d0 : ((ListData) data.getData()).data()) {
-				if (d0 instanceof CallUserData) {
-					CallUser user = ((CallUserData) d0).getUser();
+		//System.out.println(data.getData().getClass());
+		if (data.getData() instanceof ListData ld) {
+			//System.out.println("CallClient.onReceive (342)");
+			//System.out.println(ld);
+			for (Serializable d0 : ld.data()) {
+				//System.out.println(d0.getClass());
+				if (d0 instanceof CallUser user) {
 					users.put(user.getUuid(), user);
 					VideoPanels.instance.addPanel(user.getUuid());
-					System.out.println(user);
+					//System.out.println(user);
 				}
 			}
 		}
@@ -375,7 +378,7 @@ public class CallClient implements ReceiveListener, DisconnectListener {
 				mainWindow.controlBar.videoButton.setSelected(video);
 			}
 			VideoPanels.instance.addPanel(user.getUuid());
-			System.out.println(user);
+			//System.out.println(user);
 			clientCallUsers.get(user.getUuid()).connected = true;
 		}
 		if (data.getData() instanceof UserLeaveData leaveData) {
@@ -407,6 +410,7 @@ public class CallClient implements ReceiveListener, DisconnectListener {
 		}
 		if (data.getData() instanceof ScreenVideoData videoData) {
 			try {
+				//System.out.println(videoData);
 				//VideoPanels.instance.addPanel(videoData.user());
 				//System.out.println(videoData);
 				VideoPanels.instance.receiveVideo(videoData);

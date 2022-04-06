@@ -72,6 +72,9 @@ public class Call {
 	public void addUser(UUID userUuid) {
 		if (!getCallDefinition().testMember(userUuid)) {
 			try {
+				//System.out.println("Call.addUser (75)");
+				//System.out.println("Closed Connection to " + clientConnections.get(
+				//		userUuid).connection.getSocket().getInetAddress());
 				clientConnections.get(userUuid).connection.getSocket().close();
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -79,18 +82,19 @@ public class Call {
 			return;
 		}
 		CallUserData callUserData = new CallUserData(getCallUser(userUuid));
-		System.out.println("Sending: " + callUserData);
+		//System.out.println("Sending: " + callUserData);
 		for (CallClientConnection connection : clientConnections.values()) {
 			connection.connection.send(callUserData);
 		}
 		
+		//System.out.println(clientConnections.size());
 		Serializable[] array = new Serializable[clientConnections.size()];
 		int i = 0;
 		for (UUID userUuid1 : clientConnections.keySet()) {
 			array[i++] = getCallUser(userUuid1);
 		}
 		ListData listData = new ListData(array);
-		System.out.println("Sending: " + listData);
+		//System.out.println("Sending: " + listData);
 		clientConnections.get(userUuid).connection.send(listData);
 	}
 	

@@ -1,35 +1,48 @@
 package com.unleqitq.videocall.transferclasses.base.data;
 
-import com.google.gson.JsonParser;
 import com.unleqitq.videocall.sharedclasses.user.CallUser;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.io.*;
 
-public class CallUserData implements Serializable {
+public class CallUserData implements Externalizable {
 	
 	@Serial
 	private static final long serialVersionUID = -8907663600321918952L;
 	
 	@NotNull
-	private final String json;
+	private CallUser user;
+	
+	public CallUserData() {
+	
+	}
 	
 	public CallUserData(@NotNull CallUser user) {
-		json = user.save().toString();
+		this.user = user;
 	}
 	
 	public String getJson() {
-		return json;
+		return user.save().toString();
 	}
 	
 	public CallUser getUser() {
-		return CallUser.load(JsonParser.parseString(json).getAsJsonObject());
+		return user;
 	}
 	
 	@Override
 	public String toString() {
-		return "CallUserData {" + json + "}";
+		return "CallUserData {" + getJson() + "}";
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		user.writeExternal(out);
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		user = new CallUser();
+		user.readExternal(in);
 	}
 	
 }

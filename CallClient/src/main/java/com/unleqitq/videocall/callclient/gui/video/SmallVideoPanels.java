@@ -12,7 +12,7 @@ public class SmallVideoPanels {
 	public SmallVideoPanels() {
 		scrollPane = new JScrollPane();
 		panel = new JPanel();
-		panel.setLayout(new QBoxLayout(panel, BoxLayout.Y_AXIS, 900));
+		panel.setLayout(new QBoxLayout(panel, BoxLayout.X_AXIS));
 		scrollPane.setViewportView(panel);
 	}
 	

@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -42,22 +43,27 @@ public class ClientConnection implements ReceiveListener, DisconnectListener {
 	public void onReceive(Data data) {
 		if (data.getData() instanceof AuthenticationData authenticationData) {
 			try {
+				System.out.printf("%s: %s\n", authenticationData.username(),
+						Arrays.toString(authenticationData.passphrase()));
 				Account account = AccessServer.getInstance().getManagerHandler().getAccountManager().getAccount(
 						authenticationData.username());
 				if (account == null) {
+					System.out.println("Not Found");
 					connection.send(new AuthenticationResult(-2, null));
 					return;
 				}
+				System.out.println("Found");
 				boolean flag = account.test(authenticationData.passphrase(), authenticationData.time());
+				System.out.println("Found " + flag);
 				if (flag) {
 					connection.send(new AuthenticationResult(1, account.getUuid()));
 					user = account.getUuid();
 					AccessServer.getInstance().preConnections.remove(this);
 					if (AccessServer.getInstance().clientConnections.containsKey(user)) {
 						ClientConnection existing = AccessServer.getInstance().clientConnections.get(user);
-						System.out.println("User already Logged In");
-						System.out.println("New Connection: " + connection);
-						System.out.println("Preexisting Connection: " + existing.connection);
+						//System.out.println("User already Logged In");
+						//System.out.println("New Connection: " + connection);
+						//System.out.println("Preexisting Connection: " + existing.connection);
 						AccessServer.getInstance().clientConnections.remove(user);
 						connection.getReceiveThread().interrupt();
 						AccessServer.getInstance().clientConnections.get(
@@ -78,6 +84,7 @@ public class ClientConnection implements ReceiveListener, DisconnectListener {
 				else
 					connection.send(new AuthenticationResult(0, null));
 			} catch (NullPointerException e) {
+				e.printStackTrace();
 				connection.send(new AuthenticationResult(-2, null));
 			} catch (NoSuchAlgorithmException e) {
 				e.printStackTrace();
@@ -144,15 +151,15 @@ public class ClientConnection implements ReceiveListener, DisconnectListener {
 			connection.send(new ListData(array));
 		}
 		if (data.getData() instanceof TeamData teamData) {
-			System.out.println(teamData);
+			//System.out.println(teamData);
 			AccessServer.getInstance().rootConnection.send(teamData);
 		}
 		if (data.getData() instanceof CallDefData callDefData) {
-			System.out.println(callDefData);
+			//System.out.println(callDefData);
 			AccessServer.getInstance().rootConnection.send(callDefData);
 		}
 		if (data.getData() instanceof CallRequest callRequest) {
-			System.out.println(callRequest);
+			//System.out.println(callRequest);
 			if (AccessServer.getInstance().getManagerHandler().getCallManager().getCall(callRequest.uuid()).testMember(
 					user)) {
 				AccessServer.getInstance().rootConnection.send(callRequest);

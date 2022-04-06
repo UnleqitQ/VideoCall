@@ -2,19 +2,19 @@ package com.unleqitq.videocall.sharedclasses.user;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.unleqitq.videocall.sharedclasses.ObjectHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Objects;
 import java.util.UUID;
 
-public class CallUser implements Serializable {
+public class CallUser implements Externalizable {
 	
 	@Serial
 	private static final long serialVersionUID = 3011340175187922666L;
 	@NotNull
-	private final UUID uuid;
+	private UUID uuid;
 	@NotNull
 	public String firstname;
 	@NotNull
@@ -25,6 +25,8 @@ public class CallUser implements Serializable {
 	public boolean handRaised;
 	public boolean video;
 	public CallUserPermission permission;
+	
+	public CallUser() {}
 	
 	public CallUser(@NotNull UUID uuid, @NotNull String firstname, @NotNull String lastname, @NotNull String username, CallUserPermission permission) {
 		this.uuid = uuid;
@@ -111,5 +113,32 @@ public class CallUser implements Serializable {
 		return "CallUser" + save();
 	}
 	
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		ObjectHandler.ObjectOutputHandler h = new ObjectHandler.ObjectOutputHandler(out);
+		h.writeUuid(uuid);
+		h.writeString(firstname);
+		h.writeString(lastname);
+		h.writeString(username);
+		out.writeBoolean(muted);
+		out.writeBoolean(handRaised);
+		out.writeBoolean(video);
+		permission.writeExternal(out);
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		ObjectHandler.ObjectInputHandler h = new ObjectHandler.ObjectInputHandler(in);
+		uuid = h.readUuid();
+		firstname = h.readString();
+		lastname = h.readString();
+		username = h.readString();
+		muted = in.readBoolean();
+		handRaised = in.readBoolean();
+		video = in.readBoolean();
+		permission = new CallUserPermission();
+		permission.readExternal(in);
+	}
 	
 }
