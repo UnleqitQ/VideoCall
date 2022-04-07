@@ -49,7 +49,7 @@ public class BigVideoPanel {
 	
 	public void draw() {
 		BufferedImage image;
-		if (System.currentTimeMillis() - lastImageTime < 1000) {
+		if (System.currentTimeMillis() - lastImageTime < 2000) {
 			image = lastImage;
 		}
 		else {

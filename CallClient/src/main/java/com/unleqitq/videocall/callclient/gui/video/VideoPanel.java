@@ -96,7 +96,7 @@ public class VideoPanel {
 		g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		//System.out.println(image);
 		BufferedImage image;
-		if (System.currentTimeMillis() - lastImageTime < 1000) {
+		if (System.currentTimeMillis() - lastImageTime < 2000) {
 			image = lastImage;
 		}
 		else {

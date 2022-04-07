@@ -162,7 +162,10 @@ public abstract class CallDefinition implements Externalizable {
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		ObjectHandler.ObjectOutputHandler h = new ObjectHandler.ObjectOutputHandler(out);
-		h.writeUuid(uuid);
+		out.writeBoolean(uuid != null);
+		if (uuid != null) {
+			h.writeUuid(uuid);
+		}
 		h.writeUuid(creator);
 		out.writeLong(created);
 		out.writeLong(changed);
@@ -174,7 +177,8 @@ public abstract class CallDefinition implements Externalizable {
 	@Override
 	public void readExternal(ObjectInput in) throws IOException {
 		ObjectHandler.ObjectInputHandler h = new ObjectHandler.ObjectInputHandler(in);
-		uuid = h.readUuid();
+		if (in.readBoolean())
+			uuid = h.readUuid();
 		creator = h.readUuid();
 		created = in.readLong();
 		changed = in.readLong();

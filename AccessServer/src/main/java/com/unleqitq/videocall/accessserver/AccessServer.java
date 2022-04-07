@@ -1,10 +1,7 @@
 package com.unleqitq.videocall.accessserver;
 
 import com.unleqitq.videocall.accessserver.managers.*;
-import com.unleqitq.videocall.sharedclasses.ClientNetworkConnection;
-import com.unleqitq.videocall.sharedclasses.ReceiveListener;
-import com.unleqitq.videocall.sharedclasses.Server;
-import com.unleqitq.videocall.sharedclasses.ServerNetworkConnection;
+import com.unleqitq.videocall.sharedclasses.*;
 import com.unleqitq.videocall.sharedclasses.account.Account;
 import com.unleqitq.videocall.sharedclasses.call.CallDefinition;
 import com.unleqitq.videocall.sharedclasses.call.CallInformation;
@@ -55,6 +52,7 @@ public class AccessServer implements ReceiveListener {
 		loadConfig();
 		
 		managerHandler = new ManagerHandler();
+		IManagerHandler.HANDLER[0] = managerHandler;
 		managerHandler.setCallManager(new CallManager(managerHandler)).setTeamManager(
 				new TeamManager(managerHandler)).setUserManager(new UserManager(managerHandler)).setAccountManager(
 				new AccountManager(managerHandler)).setConfiguration(configuration);
@@ -73,6 +71,7 @@ public class AccessServer implements ReceiveListener {
 		Socket socket = new Socket(host, port);
 		rootConnection = new ClientNetworkConnection(socket);
 		
+		rootConnection.setDisconnectListener(()->{});
 		rootConnection.setReceiveListener(this);
 		
 		rootConnection.init();
@@ -210,28 +209,38 @@ public class AccessServer implements ReceiveListener {
 		if (data.getData() instanceof UserData) {
 			User user = ((UserData) data.getData()).getUser(managerHandler);
 			managerHandler.getUserManager().addUser(user);
-			System.out.println(user);
+			//System.out.println(user);
+		}
+		if (data.getData() instanceof AccountData) {
+			Account account;
+			try {
+				account = ((AccountData) data.getData()).getAccount(managerHandler);
+				managerHandler.getAccountManager().addAccount(account);
+				//System.out.println(account);
+			} catch (DecoderException e) {
+				e.printStackTrace();
+			}
 		}
 		if (data.getData() instanceof TeamData) {
 			Team team = ((TeamData) data.getData()).getTeam(managerHandler);
 			managerHandler.getTeamManager().addTeam(team);
-			System.out.println(team);
+			//System.out.println(team);
 		}
 		if (data.getData() instanceof CallDefData) {
 			CallDefinition call = ((CallDefData) data.getData()).getCall(managerHandler);
 			managerHandler.getCallManager().addCall(call);
-			System.out.println(call);
+			//System.out.println(call);
 		}
 		if (data.getData() instanceof CallData callData) {
 			CallInformation call = callData.getCall();
-			Queue<UUID> queue = callRequestMap.get(call.uuid());
+			Queue<UUID> queue = callRequestMap.get(call.getUuid());
 			while (!queue.isEmpty()) {
 				try {
 					clientConnections.get(queue.poll()).connection.send(callData);
 				} catch (Exception ignored) {
 				}
 			}
-			System.out.println(call);
+			//System.out.println(call);
 		}
 	}
 	
